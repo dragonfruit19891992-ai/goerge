@@ -1,0 +1,14 @@
+{
+  "name": "george-core-daemon",
+  "version": "1.0.0",
+  "description": "Local George Daemon for Ollama and File System access",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  }
+}
