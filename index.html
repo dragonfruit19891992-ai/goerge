@@ -382,7 +382,10 @@
                     <div class="glass-panel p-6 rounded-2xl space-y-5">
                         <div class="flex items-center justify-between mb-5">
                             <div>
-                                <h3 class="text-xl font-bold text-white">Local File Access</h3>
+                                <h3 class="text-xl font-bold text-white flex items-center">
+                                    Local File Access
+                                    <span id="global-sync-light" class="ml-3 pulse-dot" style="display:none; background-color: #10b981; box-shadow: 0 0 10px #10b981;"></span>
+                                </h3>
                                 <p class="text-sm text-gray-400 mt-1">Choose trusted folders and assign controlled access levels.</p>
                             </div>
                         </div>
@@ -391,21 +394,21 @@
                                 <h4 class="text-white font-bold mb-2">Organizer</h4>
                                 <p class="text-xs text-gray-400 mb-4">Read and organize only. No delete.</p>
                                 <button class="text-xs bg-indigo-600 px-3 py-2 rounded text-white mb-3" onclick="chooseLocalFolder('organizer')">Select folder</button>
-                                <div id="local-organizer-status" class="text-[11px] text-gray-400">No folder selected.</div>
+                                <div id="local-organizer-status" class="text-[11px] text-gray-400 space-y-1">No folder selected.</div>
                                 <button class="text-xs bg-white/5 px-3 py-2 rounded text-gray-200 mt-4" onclick="showLocalFolderContents('organizer')">Show contents</button>
                             </div>
                             <div class="p-5 rounded-3xl border border-white/5 bg-white/5">
                                 <h4 class="text-white font-bold mb-2">Editor</h4>
                                 <p class="text-xs text-gray-400 mb-4">Read, edit, and write.</p>
                                 <button class="text-xs bg-indigo-600 px-3 py-2 rounded text-white mb-3" onclick="chooseLocalFolder('editor')">Select folder</button>
-                                <div id="local-editor-status" class="text-[11px] text-gray-400">No folder selected.</div>
+                                <div id="local-editor-status" class="text-[11px] text-gray-400 space-y-1">No folder selected.</div>
                                 <button class="text-xs bg-white/5 px-3 py-2 rounded text-gray-200 mt-4" onclick="showLocalFolderContents('editor')">Show contents</button>
                             </div>
                             <div class="p-5 rounded-3xl border border-white/5 bg-white/5">
                                 <h4 class="text-white font-bold mb-2">Vault</h4>
                                 <p class="text-xs text-gray-400 mb-4">Write, edit, delete, and full trusted control.</p>
                                 <button class="text-xs bg-indigo-600 px-3 py-2 rounded text-white mb-3" onclick="chooseLocalFolder('vault')">Select folder</button>
-                                <div id="local-vault-status" class="text-[11px] text-gray-400">No folder selected.</div>
+                                <div id="local-vault-status" class="text-[11px] text-gray-400 space-y-1">No folder selected.</div>
                                 <button class="text-xs bg-white/5 px-3 py-2 rounded text-gray-200 mt-4" onclick="showLocalFolderContents('vault')">Show contents</button>
                             </div>
                         </div>
@@ -881,39 +884,134 @@
                 });
             };
 
-            window.chooseLocalFolder = async function(scope){
+            // --- IndexedDB for Local Folders ---
+            const DB_NAME = 'GeorgeStudioDB';
+            const STORE_NAME = 'local_folders';
+            window.localFolders = { organizer: [], editor: [], vault: [] };
+
+            function initDB() {
+                return new Promise((resolve, reject) => {
+                    const request = indexedDB.open(DB_NAME, 1);
+                    request.onupgradeneeded = (e) => {
+                        const db = e.target.result;
+                        if (!db.objectStoreNames.contains(STORE_NAME)) {
+                            db.createObjectStore(STORE_NAME, { keyPath: 'scope' });
+                        }
+                    };
+                    request.onsuccess = (e) => resolve(e.target.result);
+                    request.onerror = (e) => reject(e.target.error);
+                });
+            }
+
+            async function saveHandles(scope) {
+                const db = await initDB();
+                const tx = db.transaction(STORE_NAME, 'readwrite');
+                tx.objectStore(STORE_NAME).put({ scope, handles: window.localFolders[scope] });
+                updateLocalFolderUI(scope);
+            }
+
+            async function loadAllHandles() {
+                const db = await initDB();
+                const scopes = ['organizer', 'editor', 'vault'];
+                let anyLoaded = false;
+                
+                for (const scope of scopes) {
+                    await new Promise((resolve) => {
+                        const tx = db.transaction(STORE_NAME, 'readonly');
+                        const request = tx.objectStore(STORE_NAME).get(scope);
+                        request.onsuccess = () => {
+                            if (request.result && request.result.handles) {
+                                window.localFolders[scope] = request.result.handles;
+                                if (window.localFolders[scope].length > 0) anyLoaded = true;
+                            }
+                            resolve();
+                        };
+                        request.onerror = () => resolve();
+                    });
+                    updateLocalFolderUI(scope);
+                }
+                
+                const light = document.getElementById('global-sync-light');
+                if (light) {
+                    light.style.display = anyLoaded ? 'block' : 'none';
+                }
+            }
+
+            window.removeLocalFolder = async function(scope, index) {
+                window.localFolders[scope].splice(index, 1);
+                await saveHandles(scope);
+                loadAllHandles(); // Refresh light
+            };
+
+            function updateLocalFolderUI(scope) {
                 const status = document.getElementById('local-' + scope + '-status');
+                if (!status) return;
+                
+                const handles = window.localFolders[scope];
+                if (!handles || handles.length === 0) {
+                    status.innerHTML = 'No folder selected.';
+                    return;
+                }
+                
+                let html = '';
+                handles.forEach((handle, index) => {
+                    html += `<div class="flex justify-between items-center bg-white/5 px-2 py-1 rounded mt-1">
+                        <span class="truncate" title="${handle.name}">${handle.name}</span>
+                        <button onclick="removeLocalFolder('${scope}', ${index})" class="text-rose-400 hover:text-rose-300 ml-2" title="Remove">&times;</button>
+                    </div>`;
+                });
+                status.innerHTML = html;
+            }
+
+            window.chooseLocalFolder = async function(scope){
                 if(!window.showDirectoryPicker){
-                    if(status) status.textContent = 'Folder picker not supported in this browser.';
+                    alert('Folder picker not supported in this browser.');
                     return;
                 }
                 try{
-                    const dirHandle = await window.showDirectoryPicker();
-                    window['localFolder_' + scope] = dirHandle;
-                    if(status) status.textContent = `Folder selected: ${dirHandle.name}`;
+                    const dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+                    // Check if already added
+                    if (!window.localFolders[scope].find(h => h.name === dirHandle.name)) {
+                        window.localFolders[scope].push(dirHandle);
+                        await saveHandles(scope);
+                        loadAllHandles(); // Refresh light
+                    }
                 } catch(e){
-                    if(status) status.textContent = 'Folder selection cancelled.';
+                    console.log('Folder selection cancelled or failed.');
                 }
             };
 
             window.showLocalFolderContents = async function(scope){
-                const status = document.getElementById('local-' + scope + '-status');
-                const dirHandle = window['localFolder_' + scope];
-                if(!dirHandle){
+                const handles = window.localFolders[scope];
+                if(!handles || handles.length === 0){
                     return alert('Select a folder for ' + scope + ' first.');
                 }
                 try{
-                    let entries = [];
-                    for await (const entry of dirHandle.values()){
-                        entries.push(entry.name + (entry.kind === 'directory' ? '/' : ''));
+                    let allEntries = [];
+                    for (const dirHandle of handles) {
+                        // Request permission if needed
+                        if ((await dirHandle.queryPermission({mode: 'readwrite'})) !== 'granted') {
+                            if ((await dirHandle.requestPermission({mode: 'readwrite'})) !== 'granted') {
+                                allEntries.push(`[Permission Denied] ${dirHandle.name}`);
+                                continue;
+                            }
+                        }
+                        
+                        let entries = [];
+                        for await (const entry of dirHandle.values()){
+                            entries.push(entry.name + (entry.kind === 'directory' ? '/' : ''));
+                        }
+                        allEntries.push(`=== ${dirHandle.name} ===\n` + (entries.length ? entries.join('\n') : '(Empty)'));
                     }
-                    const message = entries.length ? entries.join('\n') : 'Folder is empty.';
-                    alert(`Contents of ${dirHandle.name}:\n\n${message}`);
+                    alert(`Contents:\n\n${allEntries.join('\n\n')}`);
                 } catch(err){
                     console.error('Folder contents error', err);
-                    alert('Unable to read folder contents.');
+                    alert('Unable to read folder contents. Please grant permissions when prompted.');
                 }
             };
+
+            // Initialize local folders on load
+            loadAllHandles();
 
             firebase.auth().onAuthStateChanged(user => {
                 if (user) {
