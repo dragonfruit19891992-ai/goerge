@@ -385,14 +385,20 @@
                 </button>
             </nav>
 
-            <div class="p-4 border-t border-george-border flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <div class="pulse-dot"></div>
-                    <span class="text-xs text-emerald-400 font-bold tracking-wide">SYSTEM ONLINE</span>
+            <div class="p-4 border-t border-george-border flex flex-col gap-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <div class="pulse-dot"></div>
+                        <span class="text-xs text-emerald-400 font-bold tracking-wide">SYSTEM ONLINE</span>
+                    </div>
+                    <a href="https://studio-5530652813-f1738-d87cb.firebaseapp.com" target="_blank" class="text-gray-500 hover:text-white transition-colors">
+                        <i class="ti ti-external-link"></i>
+                    </a>
                 </div>
-                <a href="https://studio-5530652813-f1738-d87cb.firebaseapp.com" target="_blank" class="text-gray-500 hover:text-white transition-colors">
-                    <i class="ti ti-external-link"></i>
-                </a>
+                <div class="flex items-center gap-2" id="daemon-status-container" title="Checking George Local Core Daemon...">
+                    <div class="w-2 h-2 rounded-full bg-orange-500 transition-colors duration-500" id="daemon-pulse"></div>
+                    <span class="text-[10px] text-orange-400 font-bold tracking-widest uppercase transition-colors duration-500" id="daemon-text">DAEMON OFFLINE</span>
+                </div>
             </div>
         </div>
 
@@ -1571,6 +1577,29 @@ export async function liveSync(files) {
                 }
             });
         });
+        // Global Daemon Polling
+        async function pollDaemonStatus() {
+            try {
+                const response = await fetch('http://localhost:8000/api/status');
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('daemon-pulse').classList.replace('bg-orange-500', 'bg-emerald-500');
+                    document.getElementById('daemon-pulse').classList.add('shadow-[0_0_8px_rgba(16,185,129,0.8)]');
+                    document.getElementById('daemon-text').textContent = 'DAEMON ONLINE (FREE AI)';
+                    document.getElementById('daemon-text').classList.replace('text-orange-400', 'text-emerald-400');
+                } else {
+                    throw new Error('Offline');
+                }
+            } catch (error) {
+                document.getElementById('daemon-pulse').classList.replace('bg-emerald-500', 'bg-orange-500');
+                document.getElementById('daemon-pulse').classList.remove('shadow-[0_0_8px_rgba(16,185,129,0.8)]');
+                document.getElementById('daemon-text').textContent = 'DAEMON OFFLINE';
+                document.getElementById('daemon-text').classList.replace('text-emerald-400', 'text-orange-400');
+            }
+        }
+        setInterval(pollDaemonStatus, 5000); // Ping every 5 seconds
+        pollDaemonStatus();
+
     </script>
 </body>
 </html>
