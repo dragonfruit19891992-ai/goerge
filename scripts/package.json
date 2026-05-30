@@ -1,0 +1,10 @@
+{
+  "name": "george-scripts",
+  "version": "1.0.0",
+  "description": "Background processors for George",
+  "main": "george_processor.js",
+  "type": "module",
+  "dependencies": {
+    "@google/genai": "^0.1.1"
+  }
+}

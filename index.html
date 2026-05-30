@@ -757,13 +757,16 @@
                     <h2 class="text-2xl font-bold text-white mb-2">Context Data Dump</h2>
                     <p class="text-gray-400 text-sm mb-6">Drop JSONs, company files, and pure text here. This raw data syncs to GitHub and George autonomously sorts it.</p>
                     <div class="flex-1 flex flex-col gap-4">
-                        <textarea class="input-dark flex-1 resize-none p-4 font-mono text-sm" placeholder="Paste up to 100,000 characters of raw context..."></textarea>
+                        <input type="password" id="github-pat-input" class="input-dark p-3 text-sm" placeholder="GitHub Personal Access Token (for syncing to repo)...">
+                        <textarea id="data-dump-textarea" class="input-dark flex-1 resize-none p-4 font-mono text-sm" placeholder="Paste up to 100,000 characters of raw context..."></textarea>
                         <div class="border-2 border-dashed border-indigo-500/30 rounded-xl p-8 flex flex-col items-center justify-center bg-indigo-500/5 cursor-pointer hover:bg-indigo-500/10 transition">
                             <svg class="w-10 h-10 text-indigo-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
                             <span class="text-indigo-300 font-semibold">Drag & Drop Files Here</span>
                             <span class="text-xs text-indigo-400/70 mt-1">or click to browse</span>
                         </div>
-                        <button class="bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-500 transition shadow-lg">Initiate Live GitHub Sync</button>
+                        <button onclick="initiateGithubSync()" class="bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-500 transition shadow-lg flex items-center justify-center gap-2">
+                            <span id="sync-btn-text">Initiate Live GitHub Sync</span>
+                        </button>
                     </div>
                 </div>
 
@@ -890,6 +893,54 @@ export async function liveSync(files) {
 
         function closeHoloPopup() {
             document.getElementById('holo-popup').classList.remove('active');
+        }
+
+        async function initiateGithubSync() {
+            const token = document.getElementById('github-pat-input').value;
+            const content = document.getElementById('data-dump-textarea').value;
+            const btnText = document.getElementById('sync-btn-text');
+            
+            if (!token) {
+                alert('Please provide a GitHub Personal Access Token to sync.');
+                return;
+            }
+            if (!content) {
+                alert('Please enter some data to dump.');
+                return;
+            }
+
+            btnText.textContent = "Syncing to GitHub...";
+            const filename = 'dump_' + Date.now() + '.json';
+            const owner = 'dragonfruit19891992-ai';
+            const repo = 'goerge';
+            const path = 'memory_dump/' + filename;
+            
+            try {
+                const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: "Data Dump from UI",
+                        content: btoa(unescape(encodeURIComponent(content)))
+                    })
+                });
+
+                if (response.ok) {
+                    btnText.textContent = "Sync Successful! AI Waking up...";
+                    document.getElementById('data-dump-textarea').value = '';
+                    setTimeout(() => { btnText.textContent = "Initiate Live GitHub Sync"; }, 3000);
+                } else {
+                    const err = await response.json();
+                    alert('Sync Failed: ' + err.message);
+                    btnText.textContent = "Initiate Live GitHub Sync";
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+                btnText.textContent = "Initiate Live GitHub Sync";
+            }
         }
 
         // Memory Matrix Functions

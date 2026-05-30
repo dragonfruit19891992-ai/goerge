@@ -1,0 +1,40 @@
+name: George Memory Processor
+
+on:
+  push:
+    paths:
+      - 'memory_dump/**'
+
+jobs:
+  process-memory:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install Dependencies
+        working-directory: ./scripts
+        run: npm install
+
+      - name: Run George Processor
+        working-directory: ./scripts
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: node george_processor.js
+
+      - name: Commit and Push Sorted Data
+        run: |
+          git config --global user.name "George Autonomous Bot"
+          git config --global user.email "george-bot@aurame.ca"
+          git add memory_vault/ memory_dump/
+          git commit -m "Auto-sync: Deep memory integration and categorization" || echo "No changes to commit"
+          git push
