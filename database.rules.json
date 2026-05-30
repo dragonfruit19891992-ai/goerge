@@ -5,6 +5,10 @@
         ".read": "auth != null && (auth.token.email === 'bouchard.joseph92@gmail.com' || auth.token.firebase.sign_in_provider === 'anonymous')",
         ".write": "auth != null && (auth.token.email === 'bouchard.joseph92@gmail.com' || auth.token.firebase.sign_in_provider === 'anonymous')"
       }
+    },
+    "settings": {
+      ".read": "auth != null && auth.token.email === 'bouchard.joseph92@gmail.com'",
+      ".write": "auth != null && auth.token.email === 'bouchard.joseph92@gmail.com'"
     }
   }
 }
