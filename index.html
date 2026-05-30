@@ -426,47 +426,37 @@
                         <div class="flex items-center justify-between mb-5">
                             <div>
                                 <h3 class="text-xl font-bold text-white flex items-center">
-                                    Local File Access
+                                    Sovereign File Explorer (George's Core)
                                     <span id="global-sync-light" class="ml-3 pulse-dot" style="display:none; background-color: #10b981; box-shadow: 0 0 10px #10b981;"></span>
                                 </h3>
-                                <p class="text-sm text-gray-400 mt-1">Choose trusted folders and assign controlled access levels.</p>
+                                <p class="text-sm text-gray-400 mt-1">True real-time sync. Auto-mounted to your physical hard drive by the Daemon.</p>
                             </div>
                         </div>
-                        <div class="grid gap-4 lg:grid-cols-3">
-                            <div class="p-5 rounded-3xl border border-white/5 bg-white/5">
-                                <h4 class="text-white font-bold mb-2">Organizer</h4>
-                                <p class="text-xs text-gray-400 mb-4">Read and organize only. No delete.</p>
-                                <div class="flex gap-2 mb-3">
-                                    <button class="text-xs bg-indigo-600 px-3 py-2 rounded text-white flex-1" onclick="chooseLocalFolder('organizer')">Select folder</button>
-                                    <button class="text-xs bg-orange-600 px-3 py-2 rounded text-white flex-1 font-bold shadow-[0_0_10px_rgba(234,88,12,0.4)]" onclick="enableLiveSync('organizer', event)">Enable Live Sync</button>
+                        
+                        <div class="flex h-96 rounded-3xl border border-white/10 bg-black/50 overflow-hidden shadow-inner">
+                            <!-- File Tree Sidebar -->
+                            <div class="w-1/3 bg-white/5 border-r border-white/5 overflow-y-auto p-4 custom-scrollbar">
+                                <div class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3 flex items-center justify-between">
+                                    <span>C:\\Users\\meagh\\Downloads</span>
+                                    <button onclick="fetchFileTree()" class="hover:text-white transition" title="Refresh Tree"><i class="ti ti-refresh"></i></button>
                                 </div>
-                                <div id="local-organizer-status" class="text-[11px] text-gray-400 space-y-1">No folder selected.</div>
-                                <button class="text-xs bg-white/5 px-3 py-2 rounded text-gray-200 mt-4" onclick="showLocalFolderContents('organizer')">Show contents</button>
-                            </div>
-                            <div class="p-5 rounded-3xl border border-white/5 bg-white/5">
-                                <h4 class="text-white font-bold mb-2">Editor</h4>
-                                <p class="text-xs text-gray-400 mb-4">Read, edit, and write.</p>
-                                <div class="flex gap-2 mb-3">
-                                    <button class="text-xs bg-indigo-600 px-3 py-2 rounded text-white flex-1" onclick="chooseLocalFolder('editor')">Select folder</button>
-                                    <button class="text-xs bg-orange-600 px-3 py-2 rounded text-white flex-1 font-bold shadow-[0_0_10px_rgba(234,88,12,0.4)]" onclick="enableLiveSync('editor', event)">Enable Live Sync</button>
+                                <div id="file-tree-container" class="space-y-1 text-sm font-mono text-gray-300">
+                                    <div class="text-xs text-gray-500 italic py-4 text-center">Loading live files...</div>
                                 </div>
-                                <div id="local-editor-status" class="text-[11px] text-gray-400 space-y-1">No folder selected.</div>
-                                <button class="text-xs bg-white/5 px-3 py-2 rounded text-gray-200 mt-4" onclick="showLocalFolderContents('editor')">Show contents</button>
                             </div>
-                            <div class="p-5 rounded-3xl border border-white/5 bg-white/5">
-                                <h4 class="text-white font-bold mb-2">Vault</h4>
-                                <p class="text-xs text-gray-400 mb-4">Write, edit, delete, and full trusted control.</p>
-                                <div class="flex gap-2 mb-3">
-                                    <button class="text-xs bg-indigo-600 px-3 py-2 rounded text-white flex-1" onclick="chooseLocalFolder('vault')">Select folder</button>
-                                    <button class="text-xs bg-orange-600 px-3 py-2 rounded text-white flex-1 font-bold shadow-[0_0_10px_rgba(234,88,12,0.4)]" onclick="enableLiveSync('vault', event)">Enable Live Sync</button>
+                            
+                            <!-- File Viewer Content -->
+                            <div class="w-2/3 bg-black/20 flex flex-col relative">
+                                <div id="file-viewer-header" class="h-10 border-b border-white/5 flex items-center px-4 bg-white/5 text-xs text-gray-400 font-mono hidden">
+                                    <i class="ti ti-file mr-2"></i> <span id="file-viewer-title"></span>
                                 </div>
-                                <div id="local-vault-status" class="text-[11px] text-gray-400 space-y-1">No folder selected.</div>
-                                <button class="text-xs bg-white/5 px-3 py-2 rounded text-gray-200 mt-4" onclick="showLocalFolderContents('vault')">Show contents</button>
+                                <div class="flex-1 overflow-y-auto p-4 custom-scrollbar relative">
+                                    <pre id="file-viewer-content" class="text-xs text-gray-300 font-mono whitespace-pre-wrap hidden"></pre>
+                                    <div id="file-viewer-empty" class="absolute inset-0 flex items-center justify-center text-xs text-gray-600 font-bold uppercase tracking-widest">
+                                        Select a file to read
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="mt-6 rounded-3xl border border-white/5 bg-black/30 p-4">
-                            <div class="text-xs uppercase tracking-wider text-gray-500 mb-2">Trusted local folders</div>
-                            <p class="text-[12px] text-gray-300">These folders are used for local read/write access only. Organizer cannot delete, Editor can create/edit, Vault can delete and manage everything.</p>
                         </div>
                     </div>
 
@@ -1676,43 +1666,85 @@ export async function liveSync(files) {
         setInterval(pollDaemonStatus, 5000); // Ping every 5 seconds
         pollDaemonStatus();
 
-        // Trigger Auto-Watch Engine
-        async function enableLiveSync(mode, event) {
-            if (!window.localFolders || !window.localFolders[mode] || window.localFolders[mode].length === 0) {
-                alert(`No folders selected for ${mode} yet!`);
-                return;
+        // File Explorer API Functions
+        async function fetchFileTree() {
+            const container = document.getElementById('file-tree-container');
+            container.innerHTML = '<div class="text-xs text-gray-500 italic py-4 text-center">Loading live files...</div>';
+            try {
+                const response = await fetch('http://localhost:8000/api/file-tree');
+                if (response.ok) {
+                    const tree = await response.json();
+                    container.innerHTML = renderFileTree(tree);
+                } else {
+                    container.innerHTML = '<div class="text-xs text-red-500 py-4 text-center">Daemon offline. Cannot load files.</div>';
+                }
+            } catch (error) {
+                container.innerHTML = '<div class="text-xs text-red-500 py-4 text-center">Daemon offline. Cannot load files.</div>';
             }
+        }
+
+        function renderFileTree(nodes, depth = 0) {
+            let html = '';
+            nodes.forEach(node => {
+                const padding = depth * 16 + 8;
+                if (node.type === 'directory') {
+                    html += `
+                        <div>
+                            <div class="flex items-center gap-2 py-1.5 hover:bg-white/5 cursor-pointer rounded px-2" style="padding-left: ${padding}px" onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('i').classList.toggle('rotate-90')">
+                                <i class="ti ti-chevron-right text-gray-500 transition-transform"></i>
+                                <i class="ti ti-folder text-indigo-400"></i>
+                                <span>${node.name}</span>
+                            </div>
+                            <div class="hidden">
+                                ${renderFileTree(node.children, depth + 1)}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="flex items-center gap-2 py-1.5 hover:bg-white/5 cursor-pointer rounded px-2" style="padding-left: ${padding + 24}px" onclick="readFileContent('${node.path.replace(/\\/g, '\\\\')}', '${node.name}')">
+                            <i class="ti ti-file text-gray-500"></i>
+                            <span>${node.name}</span>
+                        </div>
+                    `;
+                }
+            });
+            return html;
+        }
+
+        async function readFileContent(relativePath, filename) {
+            const contentEl = document.getElementById('file-viewer-content');
+            const emptyEl = document.getElementById('file-viewer-empty');
+            const titleEl = document.getElementById('file-viewer-title');
+            const headerEl = document.getElementById('file-viewer-header');
             
-            const folderName = window.localFolders[mode][0].name;
-            const btn = event.currentTarget;
-            const originalText = btn.textContent;
-            btn.textContent = "Connecting...";
-            btn.disabled = true;
+            emptyEl.classList.add('hidden');
+            contentEl.classList.remove('hidden');
+            headerEl.classList.remove('hidden');
+            titleEl.textContent = "Loading...";
+            contentEl.textContent = "Loading file from physical drive...";
 
             try {
-                const response = await fetch('http://localhost:8000/api/watch-folder', {
+                const response = await fetch('http://localhost:8000/api/read-file', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ relativePath: folderName, mode: mode })
+                    body: JSON.stringify({ relativePath: relativePath })
                 });
 
                 if (response.ok) {
                     const data = await response.json();
-                    btn.textContent = "Live Sync Active";
-                    btn.classList.replace('bg-orange-600', 'bg-emerald-600');
-                    btn.classList.replace('shadow-[0_0_10px_rgba(234,88,12,0.4)]', 'shadow-[0_0_10px_rgba(16,185,129,0.4)]');
+                    titleEl.textContent = filename;
+                    contentEl.textContent = data.content;
                 } else {
-                    const err = await response.json();
-                    alert('Failed to enable Live Sync: ' + err.error);
-                    btn.textContent = originalText;
-                    btn.disabled = false;
+                    contentEl.textContent = "Error: Could not read file.";
                 }
             } catch (error) {
-                alert('Daemon offline or error: ' + error.message);
-                btn.textContent = originalText;
-                btn.disabled = false;
+                contentEl.textContent = "Error: Daemon offline.";
             }
         }
+
+        // Initialize Explorer
+        fetchFileTree();
 
         // SSE Connection for Live Sync Dots
         let syncSource;
@@ -1722,58 +1754,15 @@ export async function liveSync(files) {
             
             syncSource.onmessage = function(event) {
                 const data = JSON.parse(event.data);
-                // mode, folderName, status (syncing, synced, error), indexedCount
-                const dotId = 'sync-dot-' + data.mode;
-                let dotEl = document.getElementById(dotId);
-                
-                if (!dotEl) {
-                    const container = document.getElementById('local-' + data.mode + '-status');
-                    if (container) {
-                        const pill = Array.from(container.children).find(el => el.textContent.includes(data.folderName));
-                        if (pill) {
-                            dotEl = document.createElement('div');
-                            dotEl.id = dotId;
-                            dotEl.className = 'w-2 h-2 rounded-full absolute right-8 top-1/2 -translate-y-1/2 bg-gray-600';
-                            pill.classList.add('relative', 'pr-8');
-                            pill.appendChild(dotEl);
-                        }
-                    }
-                }
-
-                if (dotEl) {
+                const light = document.getElementById('global-sync-light');
+                if (data.type === 'file_tree_update') {
+                    fetchFileTree();
+                } else if (data.type === 'sync_pulse') {
+                    light.style.display = 'block';
                     if (data.status === 'syncing') {
-                        dotEl.className = 'w-2 h-2 rounded-full absolute right-8 top-1/2 -translate-y-1/2 bg-orange-500 animate-pulse shadow-[0_0_8px_rgba(249,115,22,0.8)]';
+                        light.className = 'ml-3 pulse-dot bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,1)]';
                     } else if (data.status === 'synced') {
-                        dotEl.className = 'w-2 h-2 rounded-full absolute right-8 top-1/2 -translate-y-1/2 bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]';
-                        
-                        // Update Live Counts in Categorized Storage
-                        if (data.indexedCount) {
-                            let busEl = document.getElementById('count-business');
-                            let coreEl = document.getElementById('count-core');
-                            if(busEl) busEl.textContent = (parseInt(busEl.textContent) + Math.floor(data.indexedCount * 0.4)) + ' objects';
-                            if(coreEl) coreEl.textContent = (parseInt(coreEl.textContent) + Math.floor(data.indexedCount * 0.6)) + ' objects';
-                            busEl.classList.add('text-emerald-400');
-                            coreEl.classList.add('text-emerald-400');
-                            setTimeout(() => {
-                                busEl.classList.remove('text-emerald-400');
-                                coreEl.classList.remove('text-emerald-400');
-                            }, 1000);
-                        }
-                        
-                        // Add to Active Memory Sources row
-                        const sourcesContainer = document.getElementById('active-memory-sources');
-                        if (sourcesContainer) {
-                            if (sourcesContainer.innerHTML.includes('Waiting for sync')) sourcesContainer.innerHTML = '';
-                            if (!sourcesContainer.innerHTML.includes(data.folderName)) {
-                                sourcesContainer.innerHTML += `
-                                    <div class="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-3 py-1.5 rounded-lg text-xs flex items-center gap-2 whitespace-nowrap animate-fade-in">
-                                        <i class="ti ti-folder text-indigo-400"></i> ${data.folderName}
-                                    </div>
-                                `;
-                            }
-                        }
-                    } else {
-                        dotEl.className = 'w-2 h-2 rounded-full absolute right-8 top-1/2 -translate-y-1/2 bg-red-500';
+                        light.className = 'ml-3 pulse-dot bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,1)]';
                     }
                 }
             };
