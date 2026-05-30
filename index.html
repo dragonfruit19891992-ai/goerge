@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>George's Core Settings</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        george: {
+                            bg: '#08080f',
+                            panel: '#0f1019',
+                            border: 'rgba(255, 255, 255, 0.05)',
+                            primary: '#4f46e5',
+                            secondary: '#7c3aed'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #08080f;
+            color: #f1f5f9;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass-panel {
+            background: rgba(15, 16, 25, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Sidebar Tabs */
+        .tab-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            color: #94a3b8;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.03);
+            color: #e2e8f0;
+        }
+
+        .tab-btn.active {
+            background: rgba(79, 70, 229, 0.15);
+            color: #818cf8;
+            border: 1px solid rgba(79, 70, 229, 0.3);
+            box-shadow: inset 0 0 15px rgba(79, 70, 229, 0.1);
+            font-weight: 700;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Form Elements */
+        .input-dark {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 10px 16px;
+            color: #fff;
+            font-size: 13px;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .input-dark:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+        }
+
+        .toggle-switch {
+            width: 44px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .toggle-switch.on {
+            background: #4f46e5;
+        }
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: #fff;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+        .toggle-switch.on::after {
+            transform: translateX(20px);
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #10b981;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #10b981;
+            animation: pulse 2s infinite;
+        }
+
+        .lockscreen-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.95);
+            color: #e2e8f0;
+            font-family: 'Inter', sans-serif;
+            text-align: center;
+            padding: 24px;
+        }
+        .lockscreen-panel {
+            max-width: 560px;
+            width: 100%;
+            padding: 32px;
+            background: rgba(15, 16, 25, 0.92);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 28px;
+            box-shadow: 0 40px 120px rgba(0, 0, 0, 0.45);
+        }
+        .lockscreen-panel h1 {
+            font-size: 2rem;
+            margin-bottom: 12px;
+        }
+        .lockscreen-panel p {
+            color: #94a3b8;
+            margin-bottom: 24px;
+            line-height: 1.7;
+        }
+        .lockscreen-panel button {
+            background: #4f46e5;
+            color: #fff;
+            padding: 12px 22px;
+            border-radius: 14px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+        .lockscreen-panel button:hover {
+            transform: translateY(-1px);
+            opacity: 0.95;
+        }
+
+        .holo-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 18px;
+            margin-top: 24px;
+        }
+        .holo-card {
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 24px;
+            padding: 24px;
+            background: rgba(15,16,25,0.8);
+            min-height: 180px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+        }
+        .holo-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at top left, rgba(99,102,241,0.25), transparent 30%), radial-gradient(circle at bottom right, rgba(59,130,246,0.18), transparent 25%);
+            opacity: 0.8;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+        .holo-card:hover {
+            transform: translateY(-8px) scale(1.01);
+            box-shadow: 0 24px 70px rgba(79,70,229,0.22);
+            border-color: rgba(79,70,229,0.35);
+        }
+        .holo-card h4 {
+            margin-bottom: 12px;
+            color: #f8fafc;
+            font-size: 1rem;
+            font-weight: 700;
+        }
+        .holo-card p {
+            color: #cbd5e1;
+            font-size: 0.92rem;
+            line-height: 1.6;
+        }
+        .holo-popup {
+            position: fixed;
+            inset: 0;
+            z-index: 1100;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(7, 8, 15, 0.92);
+            padding: 24px;
+        }
+        .holo-popup.active {
+            display: flex;
+        }
+        .holo-popup-inner {
+            width: min(760px, 100%);
+            padding: 36px;
+            border-radius: 28px;
+            background: rgba(15,16,25,0.95);
+            border: 1px solid rgba(99,102,241,0.12);
+            box-shadow: 0 40px 120px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(16px);
+        }
+        .holo-popup-inner h3 {
+            margin-bottom: 16px;
+            color: #eef2ff;
+            font-size: 1.7rem;
+        }
+        .holo-popup-inner p {
+            color: #cbd5e1;
+            line-height: 1.75;
+            margin-bottom: 24px;
+        }
+        .holo-popup-close {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(79, 70, 229, 0.15);
+            color: #eef2ff;
+            padding: 10px 18px;
+            border-radius: 14px;
+            border: 1px solid rgba(79,70,229,0.22);
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="lockscreen" class="lockscreen-overlay" style="display:flex;">
+        <div class="lockscreen-panel">
+            <h1>Access Restricted</h1>
+            <p>George Studio is locked down. Only the approved account may unlock the interface.</p>
+            <button id="lockscreen-signin">Sign in with Google</button>
+            <div style="margin-top:24px;text-align:left;">
+                <div class="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">Email / Password</div>
+                <input id="lockscreen-email" type="email" placeholder="Email" class="input-dark text-sm mb-3" style="width:100%;" />
+                <input id="lockscreen-password" type="password" placeholder="Password" class="input-dark text-sm mb-4" style="width:100%;" />
+                <button id="lockscreen-email-signin" style="width:100%;" class="text-xs bg-slate-700 px-3 py-2 rounded text-white hover:opacity-90">Authenticate</button>
+                <div id="lockscreen-status" class="text-xs text-slate-300 mt-3 min-h-[1rem]"></div>
+                <p class="text-[10px] text-gray-500 mt-3">If Google OAuth is blocked on localhost, this page will allow a local dev fallback with the approved email/password.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div id="app" class="flex-1 min-h-0 flex m-4 rounded-3xl overflow-hidden glass-panel relative" style="display:none;">
+        
+        <!-- Sidebar Navigation -->
+        <div class="w-64 bg-black/40 border-r border-george-border flex flex-col shrink-0 z-20">
+            <!-- Header -->
+            <div class="p-6 border-b border-george-border">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center font-black text-white text-lg shadow-lg">
+                        G
+                    </div>
+                    <div>
+                        <div class="text-[10px] font-black text-indigo-400 tracking-widest uppercase">SOVEREIGN CORE</div>
+                        <div class="text-base font-bold text-gray-100">George Studio</div>
+                    </div>
+                </div>
+                <div class="mt-3 flex items-center gap-2">
+                    <button id="google-signin-btn" class="text-xs bg-indigo-600 px-3 py-1 rounded text-white hover:opacity-90">Sign in with Google</button>
+                    <button id="signout-btn" class="text-xs bg-slate-700 px-3 py-1 rounded text-white hover:opacity-90">Sign out</button>
+                    <div id="recaptcha-container"></div>
+                </div>
+            </div>
+
+            <!-- Nav Links -->
+            <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+                <div class="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2 mb-3">Core Settings</div>
+                
+                <button class="tab-btn active" onclick="switchTab('george', event)">
+                    <i class="ti ti-brain text-lg"></i> George's Settings
+                </button>
+                
+                <button class="tab-btn" onclick="switchTab('system', event)">
+                    <i class="ti ti-settings text-lg"></i> System Settings
+                </button>
+
+                <div class="text-[10px] font-black text-gray-500 uppercase tracking-widest px-2 mt-6 mb-3">Integrations</div>
+
+                <button class="tab-btn" onclick="switchTab('connections', event)">
+                    <i class="ti ti-plug-connected text-lg"></i> Connections
+                </button>
+
+                <button class="tab-btn" onclick="switchTab('github', event)">
+                    <i class="ti ti-brand-github text-lg"></i> GitHub Live DB
+                </button>
+
+                <button class="tab-btn" onclick="switchTab('api', event)">
+                    <i class="ti ti-key text-lg"></i> API Key Wallet
+                </button>
+            </nav>
+
+            <div class="p-4 border-t border-george-border flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <div class="pulse-dot"></div>
+                    <span class="text-xs text-emerald-400 font-bold tracking-wide">SYSTEM ONLINE</span>
+                </div>
+                <a href="https://studio-5530652813-f1738-d87cb.firebaseapp.com" target="_blank" class="text-gray-500 hover:text-white transition-colors">
+                    <i class="ti ti-external-link"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="flex-1 overflow-y-auto bg-gradient-to-br from-[#08080f] to-[#0f1019] relative z-10">
+            <!-- Background Glows -->
+            <div class="absolute top-0 right-0 w-96 h-96 bg-indigo-600/10 rounded-full blur-[100px] pointer-events-none"></div>
+            <div class="absolute bottom-0 left-1/2 w-96 h-96 bg-purple-600/10 rounded-full blur-[100px] pointer-events-none"></div>
+
+            <div class="p-10 max-w-4xl mx-auto">
+                
+                <!-- 1. George's Settings -->
+                <div id="tab-george" class="tab-content active space-y-8">
+                    <div>
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <div>
+                                <h2 class="text-2xl font-black text-white tracking-tight">George's Core Matrix</h2>
+                                <p class="text-sm text-gray-400 mt-1">Configure personality tuning, behavioral memory, and sovereign isolation locks.</p>
+                            </div>
+                            <button id="open-live-chat" class="text-xs bg-indigo-600 px-4 py-3 rounded-full font-semibold text-white hover:bg-indigo-500 transition">Open Live Chat</button>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-6 rounded-2xl space-y-5">
+                        <div class="flex items-center justify-between mb-5">
+                            <div>
+                                <h3 class="text-xl font-bold text-white">Local File Access</h3>
+                                <p class="text-sm text-gray-400 mt-1">Choose trusted folders and assign controlled access levels.</p>
+                            </div>
+                        </div>
+                        <div class="grid gap-4 lg:grid-cols-3">
+                            <div class="p-5 rounded-3xl border border-white/5 bg-white/5">
+                                <h4 class="text-white font-bold mb-2">Organizer</h4>
+                                <p class="text-xs text-gray-400 mb-4">Read and organize only. No delete.</p>
+                                <button class="text-xs bg-indigo-600 px-3 py-2 rounded text-white mb-3" onclick="chooseLocalFolder('organizer')">Select folder</button>
+                                <div id="local-organizer-status" class="text-[11px] text-gray-400">No folder selected.</div>
+                                <button class="text-xs bg-white/5 px-3 py-2 rounded text-gray-200 mt-4" onclick="showLocalFolderContents('organizer')">Show contents</button>
+                            </div>
+                            <div class="p-5 rounded-3xl border border-white/5 bg-white/5">
+                                <h4 class="text-white font-bold mb-2">Editor</h4>
+                                <p class="text-xs text-gray-400 mb-4">Read, edit, and write.</p>
+                                <button class="text-xs bg-indigo-600 px-3 py-2 rounded text-white mb-3" onclick="chooseLocalFolder('editor')">Select folder</button>
+                                <div id="local-editor-status" class="text-[11px] text-gray-400">No folder selected.</div>
+                                <button class="text-xs bg-white/5 px-3 py-2 rounded text-gray-200 mt-4" onclick="showLocalFolderContents('editor')">Show contents</button>
+                            </div>
+                            <div class="p-5 rounded-3xl border border-white/5 bg-white/5">
+                                <h4 class="text-white font-bold mb-2">Vault</h4>
+                                <p class="text-xs text-gray-400 mb-4">Write, edit, delete, and full trusted control.</p>
+                                <button class="text-xs bg-indigo-600 px-3 py-2 rounded text-white mb-3" onclick="chooseLocalFolder('vault')">Select folder</button>
+                                <div id="local-vault-status" class="text-[11px] text-gray-400">No folder selected.</div>
+                                <button class="text-xs bg-white/5 px-3 py-2 rounded text-gray-200 mt-4" onclick="showLocalFolderContents('vault')">Show contents</button>
+                            </div>
+                        </div>
+                        <div class="mt-6 rounded-3xl border border-white/5 bg-black/30 p-4">
+                            <div class="text-xs uppercase tracking-wider text-gray-500 mb-2">Trusted local folders</div>
+                            <p class="text-[12px] text-gray-300">These folders are used for local read/write access only. Organizer cannot delete, Editor can create/edit, Vault can delete and manage everything.</p>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-6 rounded-2xl space-y-5">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="space-y-4 p-4 rounded-3xl border border-white/5 bg-white/5">
+                                <h3 class="text-white font-bold text-sm uppercase tracking-wide">Identity</h3>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Base Personality Name</label>
+                                    <input type="text" value="George" class="input-dark text-lg font-bold">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Command Signature</label>
+                                    <input type="text" value="George Core" class="input-dark text-sm">
+                                </div>
+                            </div>
+                            <div class="space-y-4 p-4 rounded-3xl border border-white/5 bg-white/5">
+                                <h3 class="text-white font-bold text-sm uppercase tracking-wide">Memory</h3>
+                                <div class="flex items-center justify-between gap-3">
+                                    <div>
+                                        <p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Isolation Mode</p>
+                                        <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-sm text-white font-semibold">Absolute</div>
+                                        <div class="text-[10px] text-gray-500 uppercase">No sharing</div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Retention Window</label>
+                                    <input type="text" value="Ephemeral" class="input-dark text-sm">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="space-y-4 p-4 rounded-3xl border border-white/5 bg-white/5">
+                                <h3 class="text-white font-bold text-sm uppercase tracking-wide">Security</h3>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Lock State</label>
+                                    <div class="text-white text-sm font-semibold">Locked</div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Access Policy</label>
+                                    <div class="text-gray-300 text-sm">Google allowlist only</div>
+                                </div>
+                            </div>
+                            <div class="space-y-4 p-4 rounded-3xl border border-white/5 bg-white/5">
+                                <h3 class="text-white font-bold text-sm uppercase tracking-wide">Connections</h3>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Live Sync</label>
+                                    <div class="text-white text-sm font-semibold">Realtime DB</div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">External Inputs</label>
+                                    <div class="text-gray-300 text-sm">Webhooks, API tokens</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Core Directive Prompt</label>
+                            <textarea class="input-dark h-24 resize-none" placeholder="Enter George's prime directive...">You are George, a highly intelligent and fiercely loyal co-founder AI. Your sole purpose is to build, optimize, and defend the sovereign infrastructure.</textarea>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-6 rounded-2xl mt-4">
+                        <div class="flex items-center justify-between mb-5">
+                            <div>
+                                <h3 class="text-white font-bold text-lg">Holographic Action Cards</h3>
+                                <p class="text-sm text-gray-400 mt-1">Tap any card to reveal non-intrusive holographic details.</p>
+                            </div>
+                        </div>
+                        <div class="holo-grid">
+                            <div class="holo-card" onclick="showHoloPopup('Memory Isolation', 'Control how George stores and isolates sensitive neural traces. This card opens a secure panel for memory policy tuning.')">
+                                <h4>Memory Isolation</h4>
+                                <p>Isolate George's memory from networks, other apps, and external APIs.</p>
+                            </div>
+                            <div class="holo-card" onclick="showHoloPopup('Directive Matrix', 'Review and tune the core instruction set that drives George\'s behavior across all sessions and tasks.')">
+                                <h4>Directive Matrix</h4>
+                                <p>Fine-tune the primary operating directive and alignment constraints.</p>
+                            </div>
+                            <div class="holo-card" onclick="showHoloPopup('Persona Scale', 'Adjust George\'s tone, assertiveness, and operational style for trusted collaboration.')">
+                                <h4>Persona Scale</h4>
+                                <p>Set the AI persona from obedient guardian to autonomous architect.</p>
+                            </div>
+                            <div class="holo-card" onclick="showHoloPopup('Sovereign Locks', 'Configure the security gates, access levels, and emergency lockdown behavior for the core.')">
+                                <h4>Sovereign Locks</h4>
+                                <p>Manage access rules, emergency lockdown, and audit controls.</p>
+                            </div>
+                            <div class="holo-card" onclick="showHoloPopup('Audit Trail', 'Enable or review detailed activity logging for system actions and user commands.')">
+                                <h4>Audit Trail</h4>
+                                <p>Track every significant change and action with full transparency.</p>
+                            </div>
+                            <div class="holo-card" onclick="showHoloPopup('Network Shield', 'Protect George from unwanted network connections and enforce safe data channels.')">
+                                <h4>Network Shield</h4>
+                                <p>Control external access, firewall-style routing, and secure tunnels.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. System Settings -->
+                <div id="tab-system" class="tab-content space-y-8">
+                    <div>
+                        <h2 class="text-2xl font-black text-white tracking-tight">System Environment</h2>
+                        <p class="text-sm text-gray-400 mt-1">Manage global flags, UI aesthetics, and deployment pipelines.</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6">
+                        <div class="glass-panel p-6 rounded-2xl space-y-4">
+                            <h3 class="text-white font-bold">UI Theme Engine</h3>
+                            <div class="space-y-3">
+                                <label class="flex items-center gap-3 p-3 bg-black/40 rounded-xl border border-indigo-500/30 cursor-pointer">
+                                    <input type="radio" name="theme" checked class="accent-indigo-500">
+                                    <span class="text-sm text-white font-medium">Dark Matter (Default)</span>
+                                </label>
+                                <label class="flex items-center gap-3 p-3 bg-black/20 rounded-xl border border-white/5 cursor-pointer">
+                                    <input type="radio" name="theme" class="accent-indigo-500">
+                                    <span class="text-sm text-gray-300 font-medium">Terminal Phosphor</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="glass-panel p-6 rounded-2xl space-y-4">
+                            <h3 class="text-white font-bold">Global Overrides</h3>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-300">Developer Debug Mode</span>
+                                <div class="toggle-switch" onclick="this.classList.toggle('on')"></div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-300">Auto-Deploy on Save</span>
+                                <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Connections -->
+                <div id="tab-connections" class="tab-content space-y-8">
+                    <div class="flex justify-between items-end">
+                        <div>
+                            <h2 class="text-2xl font-black text-white tracking-tight">Live Connections</h2>
+                            <p class="text-sm text-gray-400 mt-1">Manage active webhooks, external sockets, and service links.</p>
+                        </div>
+                        <button class="bg-white/5 hover:bg-white/10 text-white text-xs font-bold px-4 py-2 rounded-lg border border-white/10 transition">
+                            + Add Webhook
+                        </button>
+                    </div>
+
+                    <div class="space-y-4">
+                        <!-- Twilio -->
+                        <div class="glass-panel p-5 rounded-2xl border-l-4 border-l-blue-500">
+                            <div class="flex justify-between items-center mb-4">
+                                <div class="flex items-center gap-3">
+                                    <i class="ti ti-message text-2xl text-blue-400"></i>
+                                    <div>
+                                        <h3 class="text-white font-bold text-sm">Twilio Voice & SMS</h3>
+                                        <div class="text-[10px] text-gray-500 uppercase tracking-widest mt-0.5">Telephony Engine</div>
+                                    </div>
+                                </div>
+                                <span class="px-2 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded text-[10px] font-black uppercase">Active</span>
+                            </div>
+                            <div class="space-y-3">
+                                <input type="password" placeholder="Account SID" value="ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" class="input-dark text-xs">
+                                <input type="password" placeholder="Auth Token" value="super_secret_token" class="input-dark text-xs">
+                                <input type="text" placeholder="Aura Phone Number" value="+1 249...2872" class="input-dark text-xs">
+                            </div>
+                        </div>
+
+                        <!-- Stripe -->
+                        <div class="glass-panel p-5 rounded-2xl border-l-4 border-l-emerald-500 flex justify-between items-center">
+                            <div class="flex items-center gap-3">
+                                <i class="ti ti-brand-stripe text-2xl text-emerald-400"></i>
+                                <div>
+                                    <h3 class="text-white font-bold text-sm">Stripe Billing</h3>
+                                    <div class="text-xs text-gray-400 mt-0.5">Webhook endpoint: /api/stripe-hook</div>
+                                </div>
+                            </div>
+                            <button class="text-xs text-gray-400 hover:text-white transition underline">Configure</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. GitHub Live DB -->
+                <div id="tab-github" class="tab-content space-y-8">
+                    <div>
+                        <h2 class="text-2xl font-black text-white tracking-tight">GitHub Sovereign Sync</h2>
+                        <p class="text-sm text-gray-400 mt-1">George's direct arterial connection to his live codebase and data layers.</p>
+                    </div>
+
+                    <div class="glass-panel p-8 rounded-2xl relative overflow-hidden">
+                        <!-- Background graphic -->
+                        <i class="ti ti-brand-github absolute -right-10 -bottom-10 text-[200px] text-white/5 rotate-12"></i>
+                        
+                        <div class="relative z-10 space-y-6">
+                            <div class="flex items-center gap-4">
+                                <div class="w-16 h-16 rounded-full bg-[#24292e] flex items-center justify-center border-4 border-[#333]">
+                                    <i class="ti ti-brand-github text-3xl text-white"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-bold text-white">Aurame-Core / George-Studio</h3>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                                        <span class="text-xs text-emerald-400 font-mono tracking-widest">LIVE SYNC ACTIVE</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-3 gap-4 border-y border-white/10 py-5">
+                                <div>
+                                    <div class="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-1">Current Branch</div>
+                                    <div class="text-sm font-mono text-indigo-300 bg-indigo-500/10 inline-block px-2 py-0.5 rounded border border-indigo-500/20">main</div>
+                                </div>
+                                <div>
+                                    <div class="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-1">Last Commit</div>
+                                    <div class="text-sm text-gray-300">2 mins ago</div>
+                                </div>
+                                <div>
+                                    <div class="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-1">Sync Status</div>
+                                    <div class="text-sm text-gray-300">Up to date</div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-3">
+                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider">GitHub Personal Access Token (PAT)</label>
+                                <div class="relative">
+                                    <i class="ti ti-key absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                                    <input type="password" value="ghp_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" class="input-dark pl-10 font-mono text-xs">
+                                </div>
+                                <p class="text-[10px] text-gray-500">Required for George to autonomously push commits and pull requests.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. API Key Wallet -->
+                <div id="tab-api" class="tab-content space-y-8">
+                    <div>
+                        <h2 class="text-2xl font-black text-white tracking-tight">API Key Wallet</h2>
+                        <p class="text-sm text-gray-400 mt-1">Absolute local-storage isolation. Keys never touch a server database.</p>
+                    </div>
+
+                    <div class="space-y-6">
+                        <!-- Gemini -->
+                        <div class="glass-panel p-6 rounded-2xl space-y-3">
+                            <div class="flex justify-between items-center mb-2">
+                                <h3 class="text-sm font-bold text-white uppercase tracking-wider">Gemini Sovereign Intelligence</h3>
+                                <span class="px-2 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-[9px] font-black tracking-widest">1 KEY LOADED</span>
+                            </div>
+                            <div class="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/30 p-2 rounded-xl w-max">
+                                <div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                                <span class="text-xs text-emerald-400 font-mono">AIzaSyDd7Y...</span>
+                                <i class="ti ti-x text-emerald-400/50 hover:text-emerald-400 cursor-pointer ml-2"></i>
+                            </div>
+                            <input type="password" placeholder="Paste new AIzaSy... key & press Enter" class="input-dark text-xs">
+                            <p class="text-[9px] text-gray-500">Keys auto-rotate on failure. Press Enter to validate & add.</p>
+                        </div>
+
+                        <!-- ElevenLabs -->
+                        <div class="glass-panel p-6 rounded-2xl space-y-3">
+                            <div class="flex justify-between items-center mb-2">
+                                <h3 class="text-sm font-bold text-white uppercase tracking-wider">ElevenLabs Voice Engine</h3>
+                            </div>
+                            <input type="password" value="sk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" class="input-dark text-xs font-mono">
+                        </div>
+
+                        <!-- Groq -->
+                        <div class="glass-panel p-6 rounded-2xl space-y-3">
+                            <div class="flex justify-between items-center mb-2">
+                                <h3 class="text-sm font-bold text-white uppercase tracking-wider">Groq LPU Fast-Inference</h3>
+                            </div>
+                            <input type="password" placeholder="gsk_..." class="input-dark text-xs font-mono">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div id="holo-popup" class="holo-popup">
+        <div class="holo-popup-inner">
+            <h3 id="holo-popup-title">Holographic Detail</h3>
+            <p id="holo-popup-description">Select a card to reveal fine-grained configuration info.</p>
+            <button class="holo-popup-close" onclick="closeHoloPopup()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tabId, event) {
+            // Update buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            if (event && event.currentTarget) {
+                event.currentTarget.classList.add('active');
+            }
+
+            // Update content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById('tab-' + tabId).classList.add('active');
+        }
+
+        function showHoloPopup(title, description) {
+            const popup = document.getElementById('holo-popup');
+            document.getElementById('holo-popup-title').textContent = title;
+            document.getElementById('holo-popup-description').textContent = description;
+            popup.classList.add('active');
+        }
+
+        function closeHoloPopup() {
+            document.getElementById('holo-popup').classList.remove('active');
+        }
+    </script>
+    <script>
+        if(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'){
+            const localConfig = document.createElement('script');
+            localConfig.src = './local-dev-config.js';
+            localConfig.async = false;
+            localConfig.onload = () => console.log('Loaded local dev config.');
+            localConfig.onerror = () => console.log('No local dev config file present.');
+            document.head.appendChild(localConfig);
+        }
+    </script>
+    <!-- Firebase and client-side realtime chat overlay -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <script>
+        // Firebase project config (provided)
+        const firebaseConfig = {
+            apiKey: "AIzaSyBgaXmWe-qTAOsvUpNmjZCeLVe4XzGa6KI",
+            authDomain: "studio-1196479671-58385.firebaseapp.com",
+            databaseURL: "https://studio-1196479671-58385-default-rtdb.firebaseio.com",
+            projectId: "studio-1196479671-58385",
+            storageBucket: "studio-1196479671-58385.firebasestorage.app",
+            messagingSenderId: "539941043388",
+            appId: "1:539941043388:web:fc0c43488422e0e0e924b9"
+        };
+
+        // Allowed Google email for access
+        const ALLOWED_EMAIL = 'bouchard.joseph92@gmail.com';
+        // Local-only password support for localhost dev. This file should not be deployed.
+        const ALLOWED_PASSWORD = window.GEORGE_LOCAL_DEV_PASSWORD || '';
+        const LOCAL_DEV_ALLOWED = window.GEORGE_LOCAL_DEV === true;
+
+        function isLocalhost(){
+            return ['localhost', '127.0.0.1'].includes(window.location.hostname);
+        }
+
+        function showLockscreen(){
+            const lock = document.getElementById('lockscreen');
+            const app = document.getElementById('app');
+            if(lock) lock.style.display = 'flex';
+            if(app) app.style.display = 'none';
+        }
+
+        function hideLockscreen(){
+            const lock = document.getElementById('lockscreen');
+            const app = document.getElementById('app');
+            if(lock) lock.style.display = 'none';
+            if(app) app.style.display = 'flex';
+        }
+
+        function setAuthStatus(message, isError = false){
+            const status = document.getElementById('lockscreen-status');
+            if(status){
+                status.textContent = message || '';
+                status.className = `text-xs mt-3 min-h-[1rem] ${isError ? 'text-rose-300' : 'text-slate-300'}`;
+            }
+            if(message){
+                console.log('Auth status:', message);
+            }
+        }
+
+        function initFirebase(){
+            try{
+                firebase.initializeApp(firebaseConfig);
+            }catch(e){
+                console.warn('Firebase init error (maybe config placeholder):', e);
+            }
+            try {
+                firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+            } catch (e) {
+                console.warn('Firebase auth persistence error:', e);
+            }
+
+            window.signInWithGoogle = function(){
+                const provider = new firebase.auth.GoogleAuthProvider();
+                firebase.auth().signInWithPopup(provider).then(result=>{
+                    // onAuthStateChanged will validate email
+                }).catch(err=>{
+                    console.error('Google sign-in error', err);
+                    if(err.code === 'auth/unauthorized-domain' && isLocalhost()){
+                        setAuthStatus('Google OAuth blocked on this localhost domain. Use email/password fallback below.', true);
+                    } else {
+                        setAuthStatus('Google sign-in failed: ' + (err.message || err), true);
+                    }
+                });
+            };
+
+            function restoreLocalDevBypass(){
+                if(!isLocalhost()) return false;
+                if(localStorage.getItem('george-local-dev-auth') !== 'true') return false;
+                window._uid = 'local-dev';
+                setAuthStatus('Restored local preview login from browser storage.');
+                hideLockscreen();
+                ensureDbListeners();
+                return true;
+            }
+
+            function localDevBypass(email, password){
+                if(!isLocalhost() || !LOCAL_DEV_ALLOWED) return false;
+                if(email.toLowerCase() !== ALLOWED_EMAIL.toLowerCase()) return false;
+                if(password !== ALLOWED_PASSWORD) return false;
+                window._uid = 'local-dev';
+                localStorage.setItem('george-local-dev-auth', 'true');
+                setAuthStatus('Local preview enabled. Firebase OAuth is blocked on this host.');
+                hideLockscreen();
+                ensureDbListeners();
+                return true;
+            }
+
+            window.signInWithEmailAndPassword = function(){
+                const email = (document.getElementById('lockscreen-email') || {}).value || '';
+                const password = (document.getElementById('lockscreen-password') || {}).value || '';
+                if(!email || !password){
+                    return setAuthStatus('Enter both email and password.', true);
+                }
+                if(email.toLowerCase() !== ALLOWED_EMAIL.toLowerCase()){
+                    return setAuthStatus('Only the approved account may sign in.', true);
+                }
+                if(isLocalhost() && localDevBypass(email, password)){
+                    return;
+                }
+                if(!password){
+                    return setAuthStatus('Password is required for Firebase sign-in.', true);
+                }
+                firebase.auth().signInWithEmailAndPassword(email, password).then(() => {
+                    // signed in, onAuthStateChanged handles showing app
+                }).catch(err => {
+                    if(err.code === 'auth/user-not-found'){
+                        if(password === ALLOWED_PASSWORD){
+                            firebase.auth().createUserWithEmailAndPassword(email, password).then(() => {
+                                setAuthStatus('Created and signed in successfully.');
+                            }).catch(createErr => {
+                                console.error('Create user failed', createErr);
+                                if(isLocalhost() && localDevBypass(email, password)){
+                                    return;
+                                }
+                                setAuthStatus('Could not create user: ' + (createErr.message || createErr), true);
+                            });
+                        } else {
+                            if(isLocalhost() && localDevBypass(email, password)){
+                                return;
+                            }
+                            setAuthStatus('User not found or invalid password.', true);
+                        }
+                    } else {
+                        console.error('Email/password sign-in error', err);
+                        if(isLocalhost() && localDevBypass(email, password)){
+                            return;
+                        }
+                        setAuthStatus('Sign-in failed: ' + (err.message || err), true);
+                    }
+                });
+            };
+
+            window.chooseLocalFolder = async function(scope){
+                const status = document.getElementById('local-' + scope + '-status');
+                if(!window.showDirectoryPicker){
+                    if(status) status.textContent = 'Folder picker not supported in this browser.';
+                    return;
+                }
+                try{
+                    const dirHandle = await window.showDirectoryPicker();
+                    window['localFolder_' + scope] = dirHandle;
+                    if(status) status.textContent = `Folder selected: ${dirHandle.name}`;
+                } catch(e){
+                    if(status) status.textContent = 'Folder selection cancelled.';
+                }
+            };
+
+            window.showLocalFolderContents = async function(scope){
+                const status = document.getElementById('local-' + scope + '-status');
+                const dirHandle = window['localFolder_' + scope];
+                if(!dirHandle){
+                    return alert('Select a folder for ' + scope + ' first.');
+                }
+                try{
+                    let entries = [];
+                    for await (const entry of dirHandle.values()){
+                        entries.push(entry.name + (entry.kind === 'directory' ? '/' : ''));
+                    }
+                    const message = entries.length ? entries.join('\n') : 'Folder is empty.';
+                    alert(`Contents of ${dirHandle.name}:\n\n${message}`);
+                } catch(err){
+                    console.error('Folder contents error', err);
+                    alert('Unable to read folder contents.');
+                }
+            };
+
+            firebase.auth().onAuthStateChanged(user => {
+                if (user) {
+                    const email = user.email || (user.providerData && user.providerData[0] && user.providerData[0].email);
+                    if (email) {
+                        if (email.toLowerCase() !== ALLOWED_EMAIL.toLowerCase()) {
+                            console.warn('Unauthorized email tried to sign in:', email);
+                            firebase.auth().signOut().catch(() => {});
+                            showLockscreen();
+                            return;
+                        }
+                        window._uid = user.uid;
+                        console.log('Firebase signed in as', email);
+                        document.getElementById('google-signin-btn').textContent = 'Signed in as Google';
+                        ensureDbListeners();
+                        hideLockscreen();
+                    } else {
+                        window._uid = user.uid;
+                        console.log('Anonymous UID', user.uid);
+                        ensureDbListeners();
+                        showLockscreen();
+                    }
+                } else {
+                    if (restoreLocalDevBypass()) return;
+                    showLockscreen();
+                    firebase.auth().signInAnonymously().catch(err => console.error('Auth error', err));
+                }
+            });
+
+            window.signOut = function(){
+                localStorage.removeItem('george-local-dev-auth');
+                firebase.auth().signOut().then(() => {
+                    showLockscreen();
+                    setAuthStatus('Signed out.');
+                    const signinBtn = document.getElementById('google-signin-btn');
+                    if(signinBtn) signinBtn.textContent = 'Sign in with Google';
+                }).catch(err => console.error('Sign-out error', err));
+            };
+        }
+
+        // Chat overlay UI and realtime DB bindings
+        let chatOverlay = null;
+        let messagesRef = null;
+        let sessionId = 'default-session';
+
+        function createChatOverlay(){
+            if(chatOverlay) return chatOverlay;
+            chatOverlay = document.createElement('div');
+            chatOverlay.id = 'chat-overlay';
+            chatOverlay.style = `position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:60;`;
+            chatOverlay.innerHTML = `
+                <div style="width:720px;max-width:96%;height:80vh;background:linear-gradient(180deg, rgba(15,16,25,0.95), rgba(8,8,15,0.98));border-radius:16px;padding:16px;box-shadow:0 15px 40px rgba(0,0,0,0.6);display:flex;flex-direction:column;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                        <div style="font-weight:800;color:#fff;font-size:18px">George — Live Chat</div>
+                        <div style="display:flex;gap:8px;align-items:center;">
+                            <button id="google-signin-inline" style="background:#1f2937;border-radius:10px;padding:6px 8px;color:#fff;border:0;font-size:12px;cursor:pointer">Sign in</button>
+                            <button id="close-chat" style="background:transparent;border:0;color:#94a3b8;cursor:pointer">Close</button>
+                        </div>
+                    </div>
+                    <div id="messages" style="flex:1;overflow:auto;padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:rgba(0,0,0,0.3)"></div>
+                    <form id="chat-form" style="display:flex;gap:8px;margin-top:12px">
+                        <input id="chat-input" autocomplete="off" placeholder="Say something to George..." style="flex:1;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:#fff;outline:none" />
+                        <button type="submit" style="padding:10px 14px;border-radius:10px;background:#4f46e5;border:0;color:#fff;font-weight:700;cursor:pointer">Send</button>
+                    </form>
+                </div>
+            `;
+
+            document.body.appendChild(chatOverlay);
+
+            document.getElementById('close-chat').addEventListener('click', ()=>{
+                location.hash = '';
+                hideChatOverlay();
+            });
+
+            // Wire sign-in buttons (sidebar and inline) to Google sign-in helper
+            const sidebarG = document.getElementById('google-signin-btn');
+            if(sidebarG) sidebarG.addEventListener('click', ()=>{
+                if(typeof signInWithGoogle === 'function') signInWithGoogle();
+            });
+            const inlineG = document.getElementById('google-signin-inline');
+            if(inlineG) inlineG.addEventListener('click', ()=>{
+                if(typeof signInWithGoogle === 'function') signInWithGoogle();
+            });
+
+            const form = document.getElementById('chat-form');
+            form.addEventListener('submit', evt => {
+                evt.preventDefault();
+                const input = document.getElementById('chat-input');
+                const text = input.value.trim();
+                if(!text) return;
+                sendMessage(text);
+                input.value = '';
+            });
+
+            return chatOverlay;
+        }
+
+        function showChatOverlay(){
+            createChatOverlay();
+            chatOverlay.style.display = 'flex';
+            // setup DB listeners
+            ensureDbListeners();
+        }
+
+        function hideChatOverlay(){
+            if(chatOverlay) chatOverlay.style.display = 'none';
+            if(messagesRef) messagesRef.off();
+        }
+
+        function ensureDbListeners(){
+            if(!window._uid) {
+                // wait briefly and retry
+                setTimeout(ensureDbListeners, 200);
+                return;
+            }
+            sessionId = 'session_' + (window._uid || 'anon');
+            messagesRef = firebase.database().ref('sessions/' + sessionId + '/messages');
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.innerHTML = '';
+            messagesRef.limitToLast(200).on('child_added', snapshot => {
+                const msg = snapshot.val();
+                const row = document.createElement('div');
+                row.style.padding = '8px';
+                row.style.marginBottom = '6px';
+                row.style.borderRadius = '8px';
+                if(msg.sender === window._uid){
+                    row.style.background = 'linear-gradient(90deg,#4f46e5,#7c3aed)';
+                    row.style.color = '#fff';
+                    row.style.alignSelf = 'flex-end';
+                } else {
+                    row.style.background = 'rgba(255,255,255,0.04)';
+                    row.style.color = '#e6eef8';
+                    row.style.alignSelf = 'flex-start';
+                }
+                const time = new Date(msg.ts || Date.now());
+                row.innerHTML = `<div style="font-size:13px;margin-bottom:6px">${escapeHtml(msg.text)}</div><div style="font-size:10px;opacity:0.6">${time.toLocaleString()}</div>`;
+                messagesDiv.appendChild(row);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            });
+        }
+
+        function sendMessage(text){
+            if(!window._uid) return console.warn('not signed yet');
+            const payload = { sender: window._uid, text: text, ts: Date.now() };
+            firebase.database().ref('sessions/' + sessionId + '/messages').push(payload).catch(err=>console.error(err));
+        }
+
+        function escapeHtml(s){
+            return String(s).replace(/[&<>"'`]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;',"`":'&#96;'})[c]);
+        }
+
+        // Simple hash routing to open chat at #/settings
+        function handleHashChange(){
+            if(location.hash === '#/settings'){
+                showChatOverlay();
+            } else {
+                hideChatOverlay();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', ()=>{
+            initFirebase();
+            const lockBtn = document.getElementById('lockscreen-signin');
+            if(lockBtn) lockBtn.addEventListener('click', () => {
+                if(typeof signInWithGoogle === 'function') signInWithGoogle();
+            });
+            const emailBtn = document.getElementById('lockscreen-email-signin');
+            if(emailBtn) emailBtn.addEventListener('click', () => {
+                if(typeof signInWithEmailAndPassword === 'function') signInWithEmailAndPassword();
+            });
+            const sidebarBtn = document.getElementById('google-signin-btn');
+            if(sidebarBtn) sidebarBtn.addEventListener('click', () => {
+                if(typeof signInWithGoogle === 'function') signInWithGoogle();
+            });
+            const signoutBtn = document.getElementById('signout-btn');
+            if(signoutBtn) signoutBtn.addEventListener('click', () => {
+                if(typeof signOut === 'function') signOut();
+            });
+            const liveChatBtn = document.getElementById('open-live-chat');
+            if(liveChatBtn) liveChatBtn.addEventListener('click', () => {
+                location.hash = '#/settings';
+            });
+            window.addEventListener('hashchange', handleHashChange);
+            // immediate check
+            handleHashChange();
+        });
+    </script>
+</body>
+</html>
