@@ -273,6 +273,43 @@
             font-weight: 700;
         }
 
+        /* Matrix Popup for Memory Isolation */
+        .matrix-popup {
+            position: fixed; inset: 0; z-index: 1200; display: none;
+            background: rgba(5, 5, 10, 0.95); backdrop-filter: blur(20px);
+            align-items: center; justify-content: center; padding: 24px;
+        }
+        .matrix-popup.active { display: flex; }
+        .matrix-popup-inner {
+            width: 100%; max-width: 1200px; height: 85vh;
+            background: rgba(12, 13, 20, 0.9); border: 1px solid rgba(99,102,241,0.2);
+            border-radius: 24px; display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+        }
+        .matrix-nav {
+            display: flex; gap: 12px; padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05);
+            background: rgba(0,0,0,0.2); overflow-x: auto; flex-shrink: 0;
+        }
+        .matrix-tab-btn {
+            padding: 10px 20px; border-radius: 30px; font-size: 13px; font-weight: 600;
+            color: #94a3b8; border: 1px solid rgba(255,255,255,0.05); cursor: pointer;
+            transition: all 0.2s; white-space: nowrap;
+        }
+        .matrix-tab-btn:hover { background: rgba(255,255,255,0.05); color: #fff; }
+        .matrix-tab-btn.active {
+            background: rgba(249, 115, 22, 0.15); color: #fdba74;
+            border-color: rgba(249, 115, 22, 0.5); box-shadow: 0 0 15px rgba(249, 115, 22, 0.2);
+        }
+        .matrix-body { flex: 1; overflow-y: auto; padding: 30px; position: relative; }
+        .matrix-tab-content { display: none; animation: fadeIn 0.3s forwards; height: 100%; }
+        .matrix-tab-content.active { display: flex; }
+        .matrix-close {
+            position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.1);
+            color: #fff; border: none; width: 36px; height: 36px; border-radius: 50%;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10;
+        }
+        .matrix-close:hover { background: rgba(255,255,255,0.2); }
+
         @keyframes pulse {
             0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
             70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
@@ -489,9 +526,9 @@
                             </div>
                         </div>
                         <div class="holo-grid">
-                            <div class="holo-card" onclick="showHoloPopup('Memory Isolation', 'Control how George stores and isolates sensitive neural traces. This card opens a secure panel for memory policy tuning.')">
+                            <div class="holo-card" onclick="showMemoryMatrix()">
                                 <h4>Memory Isolation</h4>
-                                <p>Isolate George's memory from networks, other apps, and external APIs.</p>
+                                <p>Live data dump, synthetic core, categorized storage, and brain upgrade matrix.</p>
                             </div>
                             <div class="holo-card" onclick="showHoloPopup('Directive Matrix', 'Review and tune the core instruction set that drives George\'s behavior across all sessions and tasks.')">
                                 <h4>Directive Matrix</h4>
@@ -704,6 +741,131 @@
         </div>
     </div>
 
+    <!-- Memory Matrix Modal -->
+    <div id="memory-matrix" class="matrix-popup">
+        <div class="matrix-popup-inner relative">
+            <button class="matrix-close" onclick="closeMemoryMatrix()">&times;</button>
+            <div class="matrix-nav">
+                <button class="matrix-tab-btn active" onclick="switchMemoryTab('dump', event)">Context Data Dump</button>
+                <button class="matrix-tab-btn" onclick="switchMemoryTab('synthetic', event)">Synthetic Core</button>
+                <button class="matrix-tab-btn" onclick="switchMemoryTab('categorized', event)">Categorized Storage</button>
+                <button class="matrix-tab-btn" onclick="switchMemoryTab('upgrade', event)">Brain Upgrade Matrix</button>
+            </div>
+            <div class="matrix-body">
+                <!-- Tab 1: Data Dump -->
+                <div id="mtab-dump" class="matrix-tab-content active flex-col">
+                    <h2 class="text-2xl font-bold text-white mb-2">Context Data Dump</h2>
+                    <p class="text-gray-400 text-sm mb-6">Drop JSONs, company files, and pure text here. This raw data syncs to GitHub and George autonomously sorts it.</p>
+                    <div class="flex-1 flex flex-col gap-4">
+                        <textarea class="input-dark flex-1 resize-none p-4 font-mono text-sm" placeholder="Paste up to 100,000 characters of raw context..."></textarea>
+                        <div class="border-2 border-dashed border-indigo-500/30 rounded-xl p-8 flex flex-col items-center justify-center bg-indigo-500/5 cursor-pointer hover:bg-indigo-500/10 transition">
+                            <svg class="w-10 h-10 text-indigo-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                            <span class="text-indigo-300 font-semibold">Drag & Drop Files Here</span>
+                            <span class="text-xs text-indigo-400/70 mt-1">or click to browse</span>
+                        </div>
+                        <button class="bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-500 transition shadow-lg">Initiate Live GitHub Sync</button>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Synthetic Core -->
+                <div id="mtab-synthetic" class="matrix-tab-content flex-col">
+                    <h2 class="text-2xl font-bold text-white mb-2">Synthetic Core</h2>
+                    <p class="text-gray-400 text-sm mb-6">George's autonomous self-generated memories, thoughts, and independent context additions.</p>
+                    <div class="flex-1 bg-black/40 rounded-xl p-6 overflow-y-auto font-mono text-sm text-emerald-400 border border-white/5 space-y-4">
+                        <div>> INITIALIZING SYNTHETIC STREAM...</div>
+                        <div class="opacity-70">> Parsing latest user interaction...</div>
+                        <div>> [MEMORY FORMED] User prefers aggressive refactoring over incremental patches.</div>
+                        <div class="opacity-70">> Generating independent structural hypotheses...</div>
+                        <div>> [THOUGHT] The current data-dump pipeline could be optimized by pre-compiling the JSON schema. Queued for background processing.</div>
+                    </div>
+                </div>
+
+                <!-- Tab 3: Categorized Storage -->
+                <div id="mtab-categorized" class="matrix-tab-content flex-col">
+                    <h2 class="text-2xl font-bold text-white mb-2">Categorized Storage</h2>
+                    <p class="text-gray-400 text-sm mb-6">Autonomous sorting matrix. George categorizes context without human control.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-max">
+                        <div class="bg-white/5 border border-white/10 p-5 rounded-xl flex items-center gap-4 cursor-pointer hover:bg-white/10 transition">
+                            <div class="w-12 h-12 bg-blue-500/20 text-blue-400 rounded-lg flex items-center justify-center text-2xl">💼</div>
+                            <div>
+                                <div class="text-white font-bold">Business</div>
+                                <div class="text-xs text-gray-400">142 objects</div>
+                            </div>
+                        </div>
+                        <div class="bg-white/5 border border-white/10 p-5 rounded-xl flex items-center gap-4 cursor-pointer hover:bg-white/10 transition">
+                            <div class="w-12 h-12 bg-pink-500/20 text-pink-400 rounded-lg flex items-center justify-center text-2xl">❤️</div>
+                            <div>
+                                <div class="text-white font-bold">Relationships</div>
+                                <div class="text-xs text-gray-400">18 objects</div>
+                            </div>
+                        </div>
+                        <div class="bg-white/5 border border-white/10 p-5 rounded-xl flex items-center gap-4 cursor-pointer hover:bg-white/10 transition">
+                            <div class="w-12 h-12 bg-green-500/20 text-green-400 rounded-lg flex items-center justify-center text-2xl">🏠</div>
+                            <div>
+                                <div class="text-white font-bold">Family</div>
+                                <div class="text-xs text-gray-400">45 objects</div>
+                            </div>
+                        </div>
+                        <div class="bg-white/5 border border-white/10 p-5 rounded-xl flex items-center gap-4 cursor-pointer hover:bg-white/10 transition">
+                            <div class="w-12 h-12 bg-purple-500/20 text-purple-400 rounded-lg flex items-center justify-center text-2xl">🧠</div>
+                            <div>
+                                <div class="text-white font-bold">Core Projects</div>
+                                <div class="text-xs text-gray-400">89 objects</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 4: Brain Upgrade Matrix -->
+                <div id="mtab-upgrade" class="matrix-tab-content flex-col">
+                    <h2 class="text-2xl font-bold text-white mb-2">Brain Upgrade Matrix</h2>
+                    <p class="text-gray-400 text-sm mb-6">Live file tree and real codebase integration. Deploy brain add-ons safely.</p>
+                    <div class="flex flex-1 gap-6 min-h-0">
+                        <div class="w-1/3 bg-black/40 rounded-xl border border-white/5 overflow-y-auto p-4">
+                            <div class="text-xs uppercase text-gray-500 font-bold mb-3 tracking-wider">File Tree</div>
+                            <ul class="text-sm text-gray-300 font-mono space-y-2">
+                                <li class="cursor-pointer text-indigo-400 font-bold">📁 George_Brain_v2/</li>
+                                <li class="pl-4 cursor-pointer hover:text-white">📄 core_directive.js</li>
+                                <li class="pl-4 cursor-pointer hover:text-white">📄 neural_router.py</li>
+                                <li class="pl-4 cursor-pointer text-orange-400">📁 add_ons/</li>
+                                <li class="pl-8 cursor-pointer hover:text-white">📄 github_sync_module.js</li>
+                                <li class="pl-8 cursor-pointer hover:text-white">📄 json_parser.js</li>
+                            </ul>
+                        </div>
+                        <div class="w-2/3 bg-black/60 rounded-xl border border-white/5 flex flex-col">
+                            <div class="px-4 py-2 border-b border-white/5 text-xs font-mono text-gray-400 bg-black/40 flex justify-between items-center">
+                                <span>add_ons/github_sync_module.js</span>
+                                <span class="text-emerald-400 px-2 py-1 bg-emerald-400/10 rounded">Safe to upgrade</span>
+                            </div>
+                            <textarea class="flex-1 bg-transparent text-gray-300 font-mono text-xs p-4 resize-none focus:outline-none" readonly>
+// George Autonomous Upgrade File
+// Module: GitHub Sync Engine
+
+export async function liveSync(files) {
+    console.log("Analyzing incoming data dump...");
+    const parsedData = files.map(file => JSON.parse(file));
+    
+    // Deduplicate logic
+    const unique = this.memory.deduplicate(parsedData);
+    
+    // Sort into categories
+    const categorized = await this.core.sortData(unique);
+    
+    // Commit to GitHub
+    await this.github.commit(categorized, "Auto-sync: Deep memory integration");
+}
+                            </textarea>
+                            <div class="p-4 border-t border-white/5">
+                                <button class="w-full bg-orange-600/20 text-orange-400 border border-orange-500/50 font-bold py-2 rounded hover:bg-orange-600/30 transition">Inject Upgrade Payload</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
     <script>
         function switchTab(tabId, event) {
             // Update buttons
@@ -728,6 +890,20 @@
 
         function closeHoloPopup() {
             document.getElementById('holo-popup').classList.remove('active');
+        }
+
+        // Memory Matrix Functions
+        function showMemoryMatrix() {
+            document.getElementById('memory-matrix').classList.add('active');
+        }
+        function closeMemoryMatrix() {
+            document.getElementById('memory-matrix').classList.remove('active');
+        }
+        function switchMemoryTab(tabName, event) {
+            document.querySelectorAll('.matrix-tab-btn').forEach(btn => btn.classList.remove('active'));
+            if(event) event.currentTarget.classList.add('active');
+            document.querySelectorAll('.matrix-tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById('mtab-' + tabName).classList.add('active');
         }
     </script>
     <script>
