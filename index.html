@@ -1276,8 +1276,9 @@ export async function liveSync(files) {
                 
                 let html = '';
                 handles.forEach((handle, index) => {
-                    html += `<div class="flex justify-between items-center bg-white/5 px-2 py-1 rounded mt-1">
+                    html += `<div class="flex justify-between items-center bg-white/5 px-2 py-1 rounded mt-1 relative pr-8">
                         <span class="truncate" title="${handle.name}">${handle.name}</span>
+                        <div id="sync-dot-${scope}" class="w-2 h-2 rounded-full absolute right-8 top-1/2 -translate-y-1/2 bg-gray-600"></div>
                         <button onclick="removeLocalFolder('${scope}', ${index})" class="text-rose-400 hover:text-rose-300 ml-2" title="Remove">&times;</button>
                     </div>`;
                 });
