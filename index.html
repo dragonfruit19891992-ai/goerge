@@ -1678,12 +1678,12 @@ export async function liveSync(files) {
 
         // Trigger Auto-Watch Engine
         async function enableLiveSync(mode, event) {
-            if (!window.localFolderHandles || !window.localFolderHandles[mode] || window.localFolderHandles[mode].length === 0) {
+            if (!window.localFolders || !window.localFolders[mode] || window.localFolders[mode].length === 0) {
                 alert(`No folders selected for ${mode} yet!`);
                 return;
             }
             
-            const folderName = window.localFolderHandles[mode][0].name;
+            const folderName = window.localFolders[mode][0].name;
             const btn = event.currentTarget;
             const originalText = btn.textContent;
             btn.textContent = "Connecting...";
