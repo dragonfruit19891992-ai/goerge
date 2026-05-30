@@ -814,13 +814,24 @@
                 <!-- Tab 3: Categorized Storage -->
                 <div id="mtab-categorized" class="matrix-tab-content flex-col">
                     <h2 class="text-2xl font-bold text-white mb-2">Categorized Storage</h2>
-                    <p class="text-gray-400 text-sm mb-6">Autonomous sorting matrix. George categorizes context without human control.</p>
+                    <p class="text-gray-400 text-sm mb-4">Autonomous sorting matrix. George categorizes context without human control.</p>
+                    
+                    <!-- Active Memory Sources Row -->
+                    <div class="mb-6">
+                        <div class="text-[10px] uppercase tracking-widest text-gray-500 mb-2 font-bold">Active Memory Sources</div>
+                        <div id="active-memory-sources" class="flex overflow-x-auto gap-2 pb-2" style="scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent;">
+                            <div class="bg-white/5 text-gray-400 border border-white/10 px-3 py-1.5 rounded-lg text-xs flex items-center gap-2 whitespace-nowrap italic">
+                                Waiting for sync...
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 auto-rows-max">
                         <div class="bg-white/5 border border-white/10 p-5 rounded-xl flex items-center gap-4 cursor-pointer hover:bg-white/10 transition">
                             <div class="w-12 h-12 bg-blue-500/20 text-blue-400 rounded-lg flex items-center justify-center text-2xl">💼</div>
                             <div>
                                 <div class="text-white font-bold">Business</div>
-                                <div class="text-xs text-gray-400">142 objects</div>
+                                <div id="count-business" class="text-xs text-gray-400 transition-all duration-300">142 objects</div>
                             </div>
                         </div>
                         <div class="bg-white/5 border border-white/10 p-5 rounded-xl flex items-center gap-4 cursor-pointer hover:bg-white/10 transition">
@@ -841,7 +852,7 @@
                             <div class="w-12 h-12 bg-purple-500/20 text-purple-400 rounded-lg flex items-center justify-center text-2xl">🧠</div>
                             <div>
                                 <div class="text-white font-bold">Core Projects</div>
-                                <div class="text-xs text-gray-400">89 objects</div>
+                                <div id="count-core" class="text-xs text-gray-400 transition-all duration-300">89 objects</div>
                             </div>
                         </div>
                     </div>
@@ -1710,19 +1721,18 @@ export async function liveSync(files) {
             
             syncSource.onmessage = function(event) {
                 const data = JSON.parse(event.data);
-                // mode, folderName, status (syncing, synced, error)
+                // mode, folderName, status (syncing, synced, error), indexedCount
                 const dotId = 'sync-dot-' + data.mode;
                 let dotEl = document.getElementById(dotId);
                 
                 if (!dotEl) {
-                    // Inject the dot into the UI
                     const container = document.getElementById('local-' + data.mode + '-status');
                     if (container) {
                         const pill = Array.from(container.children).find(el => el.textContent.includes(data.folderName));
                         if (pill) {
                             dotEl = document.createElement('div');
                             dotEl.id = dotId;
-                            dotEl.className = 'w-2 h-2 rounded-full absolute right-8 top-1/2 -translate-y-1/2';
+                            dotEl.className = 'w-2 h-2 rounded-full absolute right-8 top-1/2 -translate-y-1/2 bg-gray-600';
                             pill.classList.add('relative', 'pr-8');
                             pill.appendChild(dotEl);
                         }
@@ -1734,6 +1744,33 @@ export async function liveSync(files) {
                         dotEl.className = 'w-2 h-2 rounded-full absolute right-8 top-1/2 -translate-y-1/2 bg-orange-500 animate-pulse shadow-[0_0_8px_rgba(249,115,22,0.8)]';
                     } else if (data.status === 'synced') {
                         dotEl.className = 'w-2 h-2 rounded-full absolute right-8 top-1/2 -translate-y-1/2 bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]';
+                        
+                        // Update Live Counts in Categorized Storage
+                        if (data.indexedCount) {
+                            let busEl = document.getElementById('count-business');
+                            let coreEl = document.getElementById('count-core');
+                            if(busEl) busEl.textContent = (parseInt(busEl.textContent) + Math.floor(data.indexedCount * 0.4)) + ' objects';
+                            if(coreEl) coreEl.textContent = (parseInt(coreEl.textContent) + Math.floor(data.indexedCount * 0.6)) + ' objects';
+                            busEl.classList.add('text-emerald-400');
+                            coreEl.classList.add('text-emerald-400');
+                            setTimeout(() => {
+                                busEl.classList.remove('text-emerald-400');
+                                coreEl.classList.remove('text-emerald-400');
+                            }, 1000);
+                        }
+                        
+                        // Add to Active Memory Sources row
+                        const sourcesContainer = document.getElementById('active-memory-sources');
+                        if (sourcesContainer) {
+                            if (sourcesContainer.innerHTML.includes('Waiting for sync')) sourcesContainer.innerHTML = '';
+                            if (!sourcesContainer.innerHTML.includes(data.folderName)) {
+                                sourcesContainer.innerHTML += `
+                                    <div class="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-3 py-1.5 rounded-lg text-xs flex items-center gap-2 whitespace-nowrap animate-fade-in">
+                                        <i class="ti ti-folder text-indigo-400"></i> ${data.folderName}
+                                    </div>
+                                `;
+                            }
+                        }
                     } else {
                         dotEl.className = 'w-2 h-2 rounded-full absolute right-8 top-1/2 -translate-y-1/2 bg-red-500';
                     }
