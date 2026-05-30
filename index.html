@@ -1032,6 +1032,11 @@
             sessionId = 'session_' + (window._uid || 'anon');
             messagesRef = firebase.database().ref('sessions/' + sessionId + '/messages');
             const messagesDiv = document.getElementById('messages');
+            if (!messagesDiv) {
+                // The chat overlay hasn't been opened yet, so we can't attach DOM listeners.
+                // It will be called again when showChatOverlay() runs.
+                return;
+            }
             messagesDiv.innerHTML = '';
             messagesRef.limitToLast(200).on('child_added', snapshot => {
                 const msg = snapshot.val();
