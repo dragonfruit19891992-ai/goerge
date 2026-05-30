@@ -13,7 +13,6 @@ const OLLAMA_EMBED_URL = 'http://127.0.0.1:11434/api/embeddings';
 
 const MEMORY_FILE = path.join('C:\\Users\\meagh', 'george_memory.json');
 
-// Initialize memory file
 if (!fs.existsSync(MEMORY_FILE)) {
     fs.writeFileSync(MEMORY_FILE, JSON.stringify({ chunks: [] }, null, 2));
 }
@@ -30,7 +29,6 @@ function cosineSimilarity(A, B) {
     return dot / (Math.sqrt(mA) * Math.sqrt(mB));
 }
 
-// Get embeddings from Ollama
 async function getEmbedding(text, model = 'llama3') {
     try {
         const response = await fetch(OLLAMA_EMBED_URL, {
@@ -46,21 +44,142 @@ async function getEmbedding(text, model = 'llama3') {
     }
 }
 
+// ==========================================
+// SSE Live Sync Stream
+// ==========================================
+let sseClients = [];
+
+app.get('/api/sync-stream', (req, res) => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+
+    sseClients.push(res);
+    req.on('close', () => {
+        sseClients = sseClients.filter(client => client !== res);
+    });
+});
+
+function broadcastSyncStatus(mode, folderName, status) {
+    const message = `data: ${JSON.stringify({ mode, folderName, status })}\n\n`;
+    sseClients.forEach(client => client.write(message));
+}
+
+// ==========================================
+// RAG Indexing Logic
+// ==========================================
+async function runIndexer(targetPath, mode) {
+    let memory = { chunks: [] };
+    if (fs.existsSync(MEMORY_FILE)) {
+        memory = JSON.parse(fs.readFileSync(MEMORY_FILE, 'utf8'));
+    }
+
+    function walkDir(dir) {
+        let results = [];
+        const list = fs.readdirSync(dir);
+        list.forEach(file => {
+            file = path.join(dir, file);
+            const stat = fs.statSync(file);
+            if (stat && stat.isDirectory()) {
+                results = results.concat(walkDir(file));
+            } else {
+                if (file.endsWith('.txt') || file.endsWith('.js') || file.endsWith('.md') || file.endsWith('.json') || file.endsWith('.html')) {
+                    results.push(file);
+                }
+            }
+        });
+        return results;
+    }
+
+    const files = walkDir(targetPath);
+    let indexedCount = 0;
+
+    for (const file of files) {
+        const text = fs.readFileSync(file, 'utf8').substring(0, 2000);
+        const embedding = await getEmbedding(text);
+        
+        if (embedding) {
+            memory.chunks = memory.chunks.filter(c => c.path !== file);
+            memory.chunks.push({
+                path: file,
+                text: text,
+                embedding: embedding,
+                mode: mode
+            });
+            indexedCount++;
+        }
+    }
+
+    fs.writeFileSync(MEMORY_FILE, JSON.stringify(memory));
+    return indexedCount;
+}
+
+// ==========================================
+// Auto-Watch Engine
+// ==========================================
+const activeWatchers = {};
+const debounceTimers = {};
+
+app.post('/api/watch-folder', async (req, res) => {
+    const { relativePath, mode } = req.body;
+    
+    if (mode !== 'organizer' && mode !== 'editor' && mode !== 'vault') {
+        return res.status(403).json({ error: 'Invalid IAM mode.' });
+    }
+
+    const basePath = 'C:\\Users\\meagh';
+    const targetPath = path.join(basePath, relativePath);
+
+    if (!targetPath.startsWith(basePath)) return res.status(403).json({ error: 'Access denied.' });
+    
+    try {
+        // Initial Burn
+        broadcastSyncStatus(mode, relativePath, 'syncing');
+        await runIndexer(targetPath, mode);
+        broadcastSyncStatus(mode, relativePath, 'synced');
+
+        // Setup File Watcher
+        if (activeWatchers[mode]) {
+            activeWatchers[mode].close(); // Close old watcher if exists
+        }
+
+        activeWatchers[mode] = fs.watch(targetPath, { recursive: true }, (eventType, filename) => {
+            if (filename) {
+                // Debounce to prevent multiple triggers for one file save
+                clearTimeout(debounceTimers[mode]);
+                debounceTimers[mode] = setTimeout(async () => {
+                    console.log(`Auto-healing memory for ${mode} due to change in ${filename}...`);
+                    broadcastSyncStatus(mode, relativePath, 'syncing');
+                    await runIndexer(targetPath, mode);
+                    broadcastSyncStatus(mode, relativePath, 'synced');
+                }, 2000);
+            }
+        });
+
+        res.json({ success: true, message: `Auto-Sync enabled for ${relativePath}` });
+
+    } catch (error) {
+        console.error('Watch Error:', error);
+        broadcastSyncStatus(mode, relativePath, 'error');
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ==========================================
+// Core Endpoints
+// ==========================================
 app.get('/api/status', (req, res) => {
     res.json({ status: 'online', name: 'George Core Daemon', userDir: 'C:\\Users\\meagh' });
 });
 
-// Advanced Chat with RAG
 app.post('/api/chat', async (req, res) => {
     const { prompt, model = 'llama3' } = req.body;
-    
     try {
-        // 1. Embed the prompt
         const promptEmbedding = await getEmbedding(prompt, model);
         let contextText = "";
 
         if (promptEmbedding) {
-            // 2. Search Memory
             const memory = JSON.parse(fs.readFileSync(MEMORY_FILE, 'utf8'));
             const scoredChunks = memory.chunks.map(chunk => {
                 return { ...chunk, score: cosineSimilarity(promptEmbedding, chunk.embedding) };
@@ -94,13 +213,12 @@ app.post('/api/chat', async (req, res) => {
     }
 });
 
-// Strict File Reading endpoint
 app.post('/api/read-file', (req, res) => {
     const { relativePath } = req.body;
     const basePath = 'C:\\Users\\meagh';
     const targetPath = path.join(basePath, relativePath);
 
-    if (!targetPath.startsWith(basePath)) return res.status(403).json({ error: 'Access denied outside of C:\\Users\\meagh' });
+    if (!targetPath.startsWith(basePath)) return res.status(403).json({ error: 'Access denied' });
 
     try {
         if (!fs.existsSync(targetPath)) return res.status(404).json({ error: 'File not found.' });
@@ -117,78 +235,9 @@ app.post('/api/read-file', (req, res) => {
     }
 });
 
-// Context Indexer
-app.post('/api/index-folder', async (req, res) => {
-    const { relativePath, mode } = req.body;
-    
-    // Strict IAM Check
-    if (mode !== 'organizer' && mode !== 'editor' && mode !== 'vault') {
-        return res.status(403).json({ error: 'Invalid IAM mode. Must be organizer, editor, or vault.' });
-    }
-
-    const basePath = 'C:\\Users\\meagh';
-    const targetPath = path.join(basePath, relativePath);
-
-    if (!targetPath.startsWith(basePath)) return res.status(403).json({ error: 'Access denied.' });
-    
-    try {
-        let memory = { chunks: [] };
-        if (fs.existsSync(MEMORY_FILE)) {
-            memory = JSON.parse(fs.readFileSync(MEMORY_FILE, 'utf8'));
-        }
-
-        // Recursive directory walk
-        function walkDir(dir) {
-            let results = [];
-            const list = fs.readdirSync(dir);
-            list.forEach(file => {
-                file = path.join(dir, file);
-                const stat = fs.statSync(file);
-                if (stat && stat.isDirectory()) {
-                    results = results.concat(walkDir(file));
-                } else {
-                    // Only read files, NEVER write or delete here!
-                    if (file.endsWith('.txt') || file.endsWith('.js') || file.endsWith('.md') || file.endsWith('.json') || file.endsWith('.html')) {
-                        results.push(file);
-                    }
-                }
-            });
-            return results;
-        }
-
-        const files = walkDir(targetPath);
-        let indexedCount = 0;
-
-        for (const file of files) {
-            // IAM Enforcement: ONLY READ. (No fs.unlink or fs.writeFileSync allowed here)
-            const text = fs.readFileSync(file, 'utf8').substring(0, 2000); // chunking to 2k chars
-            const embedding = await getEmbedding(text);
-            
-            if (embedding) {
-                // remove old entries for this file
-                memory.chunks = memory.chunks.filter(c => c.path !== file);
-                memory.chunks.push({
-                    path: file,
-                    text: text,
-                    embedding: embedding,
-                    mode: mode // track which IAM category it came from
-                });
-                indexedCount++;
-            }
-        }
-
-        fs.writeFileSync(MEMORY_FILE, JSON.stringify(memory));
-        res.json({ success: true, indexedFiles: indexedCount, iamMode: mode });
-
-    } catch (error) {
-        console.error('Indexing Error:', error);
-        res.status(500).json({ error: error.message });
-    }
-});
-
 app.listen(PORT, () => {
     console.log(`========================================`);
     console.log(`GEORGE CORE DAEMON is running on Port ${PORT}`);
-    console.log(`Listening for UI commands from localhost...`);
+    console.log(`Auto-Sync Engine Online. Listening...`);
     console.log(`========================================`);
 });

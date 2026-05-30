@@ -438,7 +438,7 @@
                                 <p class="text-xs text-gray-400 mb-4">Read and organize only. No delete.</p>
                                 <div class="flex gap-2 mb-3">
                                     <button class="text-xs bg-indigo-600 px-3 py-2 rounded text-white flex-1" onclick="chooseLocalFolder('organizer')">Select folder</button>
-                                    <button class="text-xs bg-orange-600 px-3 py-2 rounded text-white flex-1 font-bold" onclick="indexLocalFolder('organizer', event)">Burn to Memory</button>
+                                    <button class="text-xs bg-orange-600 px-3 py-2 rounded text-white flex-1 font-bold shadow-[0_0_10px_rgba(234,88,12,0.4)]" onclick="enableLiveSync('organizer', event)">Enable Live Sync</button>
                                 </div>
                                 <div id="local-organizer-status" class="text-[11px] text-gray-400 space-y-1">No folder selected.</div>
                                 <button class="text-xs bg-white/5 px-3 py-2 rounded text-gray-200 mt-4" onclick="showLocalFolderContents('organizer')">Show contents</button>
@@ -448,7 +448,7 @@
                                 <p class="text-xs text-gray-400 mb-4">Read, edit, and write.</p>
                                 <div class="flex gap-2 mb-3">
                                     <button class="text-xs bg-indigo-600 px-3 py-2 rounded text-white flex-1" onclick="chooseLocalFolder('editor')">Select folder</button>
-                                    <button class="text-xs bg-orange-600 px-3 py-2 rounded text-white flex-1 font-bold" onclick="indexLocalFolder('editor', event)">Burn to Memory</button>
+                                    <button class="text-xs bg-orange-600 px-3 py-2 rounded text-white flex-1 font-bold shadow-[0_0_10px_rgba(234,88,12,0.4)]" onclick="enableLiveSync('editor', event)">Enable Live Sync</button>
                                 </div>
                                 <div id="local-editor-status" class="text-[11px] text-gray-400 space-y-1">No folder selected.</div>
                                 <button class="text-xs bg-white/5 px-3 py-2 rounded text-gray-200 mt-4" onclick="showLocalFolderContents('editor')">Show contents</button>
@@ -458,7 +458,7 @@
                                 <p class="text-xs text-gray-400 mb-4">Write, edit, delete, and full trusted control.</p>
                                 <div class="flex gap-2 mb-3">
                                     <button class="text-xs bg-indigo-600 px-3 py-2 rounded text-white flex-1" onclick="chooseLocalFolder('vault')">Select folder</button>
-                                    <button class="text-xs bg-orange-600 px-3 py-2 rounded text-white flex-1 font-bold" onclick="indexLocalFolder('vault', event)">Burn to Memory</button>
+                                    <button class="text-xs bg-orange-600 px-3 py-2 rounded text-white flex-1 font-bold shadow-[0_0_10px_rgba(234,88,12,0.4)]" onclick="enableLiveSync('vault', event)">Enable Live Sync</button>
                                 </div>
                                 <div id="local-vault-status" class="text-[11px] text-gray-400 space-y-1">No folder selected.</div>
                                 <button class="text-xs bg-white/5 px-3 py-2 rounded text-gray-200 mt-4" onclick="showLocalFolderContents('vault')">Show contents</button>
@@ -1664,8 +1664,8 @@ export async function liveSync(files) {
         setInterval(pollDaemonStatus, 5000); // Ping every 5 seconds
         pollDaemonStatus();
 
-        // Trigger Local Context Indexer
-        async function indexLocalFolder(mode, event) {
+        // Trigger Auto-Watch Engine
+        async function enableLiveSync(mode, event) {
             if (!window.localFolderHandles || !window.localFolderHandles[mode] || window.localFolderHandles[mode].length === 0) {
                 alert(`No folders selected for ${mode} yet!`);
                 return;
@@ -1674,11 +1674,11 @@ export async function liveSync(files) {
             const folderName = window.localFolderHandles[mode][0].name;
             const btn = event.currentTarget;
             const originalText = btn.textContent;
-            btn.textContent = "Burning...";
+            btn.textContent = "Connecting...";
             btn.disabled = true;
 
             try {
-                const response = await fetch('http://localhost:8000/api/index-folder', {
+                const response = await fetch('http://localhost:8000/api/watch-folder', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ relativePath: folderName, mode: mode })
@@ -1686,17 +1686,66 @@ export async function liveSync(files) {
 
                 if (response.ok) {
                     const data = await response.json();
-                    alert(`Success! George memorized ${data.indexedFiles} files from '${folderName}' under strict ${mode} IAM rules.`);
+                    btn.textContent = "Live Sync Active";
+                    btn.classList.replace('bg-orange-600', 'bg-emerald-600');
+                    btn.classList.replace('shadow-[0_0_10px_rgba(234,88,12,0.4)]', 'shadow-[0_0_10px_rgba(16,185,129,0.4)]');
                 } else {
                     const err = await response.json();
-                    alert('Failed to index: ' + err.error);
+                    alert('Failed to enable Live Sync: ' + err.error);
+                    btn.textContent = originalText;
+                    btn.disabled = false;
                 }
             } catch (error) {
                 alert('Daemon offline or error: ' + error.message);
+                btn.textContent = originalText;
+                btn.disabled = false;
             }
-            btn.textContent = originalText;
-            btn.disabled = false;
         }
+
+        // SSE Connection for Live Sync Dots
+        let syncSource;
+        function connectLiveSync() {
+            if (syncSource) syncSource.close();
+            syncSource = new EventSource('http://localhost:8000/api/sync-stream');
+            
+            syncSource.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                // mode, folderName, status (syncing, synced, error)
+                const dotId = 'sync-dot-' + data.mode;
+                let dotEl = document.getElementById(dotId);
+                
+                if (!dotEl) {
+                    // Inject the dot into the UI
+                    const container = document.getElementById('local-' + data.mode + '-status');
+                    if (container) {
+                        const pill = Array.from(container.children).find(el => el.textContent.includes(data.folderName));
+                        if (pill) {
+                            dotEl = document.createElement('div');
+                            dotEl.id = dotId;
+                            dotEl.className = 'w-2 h-2 rounded-full absolute right-8 top-1/2 -translate-y-1/2';
+                            pill.classList.add('relative', 'pr-8');
+                            pill.appendChild(dotEl);
+                        }
+                    }
+                }
+
+                if (dotEl) {
+                    if (data.status === 'syncing') {
+                        dotEl.className = 'w-2 h-2 rounded-full absolute right-8 top-1/2 -translate-y-1/2 bg-orange-500 animate-pulse shadow-[0_0_8px_rgba(249,115,22,0.8)]';
+                    } else if (data.status === 'synced') {
+                        dotEl.className = 'w-2 h-2 rounded-full absolute right-8 top-1/2 -translate-y-1/2 bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]';
+                    } else {
+                        dotEl.className = 'w-2 h-2 rounded-full absolute right-8 top-1/2 -translate-y-1/2 bg-red-500';
+                    }
+                }
+            };
+
+            syncSource.onerror = function() {
+                syncSource.close();
+                setTimeout(connectLiveSync, 5000);
+            };
+        }
+        connectLiveSync();
 
     </script>
 </body>
