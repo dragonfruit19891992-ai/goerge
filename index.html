@@ -421,11 +421,11 @@
                                 <h3 class="text-white font-bold text-sm uppercase tracking-wide">Identity</h3>
                                 <div>
                                     <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Base Personality Name</label>
-                                    <input type="text" value="George" class="input-dark text-lg font-bold">
+                                    <input id="setting-personality-name" type="text" value="George" class="input-dark text-lg font-bold">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Command Signature</label>
-                                    <input type="text" value="George Core" class="input-dark text-sm">
+                                    <input id="setting-command-signature" type="text" value="George Core" class="input-dark text-sm">
                                 </div>
                             </div>
                             <div class="space-y-4 p-4 rounded-3xl border border-white/5 bg-white/5">
@@ -433,7 +433,7 @@
                                 <div class="flex items-center justify-between gap-3">
                                     <div>
                                         <p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Isolation Mode</p>
-                                        <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+                                        <div id="setting-isolation-mode" class="toggle-switch on" onclick="this.classList.toggle('on'); window.syncToggle('setting-isolation-mode')"></div>
                                     </div>
                                     <div class="text-right">
                                         <div class="text-sm text-white font-semibold">Absolute</div>
@@ -442,7 +442,7 @@
                                 </div>
                                 <div>
                                     <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Retention Window</label>
-                                    <input type="text" value="Ephemeral" class="input-dark text-sm">
+                                    <input id="setting-retention-window" type="text" value="Ephemeral" class="input-dark text-sm">
                                 </div>
                             </div>
                         </div>
@@ -474,7 +474,7 @@
 
                         <div>
                             <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Core Directive Prompt</label>
-                            <textarea class="input-dark h-24 resize-none" placeholder="Enter George's prime directive...">You are George, a highly intelligent and fiercely loyal co-founder AI. Your sole purpose is to build, optimize, and defend the sovereign infrastructure.</textarea>
+                            <textarea id="setting-core-directive" class="input-dark h-24 resize-none" placeholder="Enter George's prime directive...">You are George, a highly intelligent and fiercely loyal co-founder AI. Your sole purpose is to build, optimize, and defend the sovereign infrastructure.</textarea>
                         </div>
                     </div>
 
@@ -526,11 +526,11 @@
                             <h3 class="text-white font-bold">UI Theme Engine</h3>
                             <div class="space-y-3">
                                 <label class="flex items-center gap-3 p-3 bg-black/40 rounded-xl border border-indigo-500/30 cursor-pointer">
-                                    <input type="radio" name="theme" checked class="accent-indigo-500">
+                                    <input id="setting-theme-dark" type="radio" name="theme" value="dark" checked class="accent-indigo-500">
                                     <span class="text-sm text-white font-medium">Dark Matter (Default)</span>
                                 </label>
                                 <label class="flex items-center gap-3 p-3 bg-black/20 rounded-xl border border-white/5 cursor-pointer">
-                                    <input type="radio" name="theme" class="accent-indigo-500">
+                                    <input id="setting-theme-terminal" type="radio" name="theme" value="terminal" class="accent-indigo-500">
                                     <span class="text-sm text-gray-300 font-medium">Terminal Phosphor</span>
                                 </label>
                             </div>
@@ -540,11 +540,11 @@
                             <h3 class="text-white font-bold">Global Overrides</h3>
                             <div class="flex justify-between items-center">
                                 <span class="text-sm text-gray-300">Developer Debug Mode</span>
-                                <div class="toggle-switch" onclick="this.classList.toggle('on')"></div>
+                                <div id="setting-debug-mode" class="toggle-switch" onclick="this.classList.toggle('on'); window.syncToggle('setting-debug-mode')"></div>
                             </div>
                             <div class="flex justify-between items-center">
                                 <span class="text-sm text-gray-300">Auto-Deploy on Save</span>
-                                <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+                                <div id="setting-auto-deploy" class="toggle-switch on" onclick="this.classList.toggle('on'); window.syncToggle('setting-auto-deploy')"></div>
                             </div>
                         </div>
                     </div>
@@ -667,7 +667,7 @@
                                 <span class="text-xs text-emerald-400 font-mono">AIzaSyDd7Y...</span>
                                 <i class="ti ti-x text-emerald-400/50 hover:text-emerald-400 cursor-pointer ml-2"></i>
                             </div>
-                            <input type="password" placeholder="Paste new AIzaSy... key & press Enter" class="input-dark text-xs">
+                            <input id="api-key-gemini" type="password" placeholder="Paste new AIzaSy... key & press Enter" class="input-dark text-xs">
                             <p class="text-[9px] text-gray-500">Keys auto-rotate on failure. Press Enter to validate & add.</p>
                         </div>
 
@@ -676,7 +676,7 @@
                             <div class="flex justify-between items-center mb-2">
                                 <h3 class="text-sm font-bold text-white uppercase tracking-wider">ElevenLabs Voice Engine</h3>
                             </div>
-                            <input type="password" value="sk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" class="input-dark text-xs font-mono">
+                            <input id="api-key-elevenlabs" type="password" placeholder="sk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" class="input-dark text-xs font-mono">
                         </div>
 
                         <!-- Groq -->
@@ -684,7 +684,7 @@
                             <div class="flex justify-between items-center mb-2">
                                 <h3 class="text-sm font-bold text-white uppercase tracking-wider">Groq LPU Fast-Inference</h3>
                             </div>
-                            <input type="password" placeholder="gsk_..." class="input-dark text-xs font-mono">
+                            <input id="api-key-groq" type="password" placeholder="gsk_..." class="input-dark text-xs font-mono">
                         </div>
                     </div>
                 </div>
@@ -1099,6 +1099,134 @@
             window.addEventListener('hashchange', handleHashChange);
             // immediate check
             handleHashChange();
+        });
+    </script>
+    
+    <script>
+        // George Settings Live Sync (Firebase & LocalStorage)
+        document.addEventListener('DOMContentLoaded', () => {
+            const db = firebase.database();
+            
+            const stringSettings = {
+                'setting-personality-name': 'settings/coreMatrix/personalityName',
+                'setting-command-signature': 'settings/coreMatrix/commandSignature',
+                'setting-retention-window': 'settings/coreMatrix/retentionWindow',
+                'setting-core-directive': 'settings/coreMatrix/coreDirective'
+            };
+
+            const toggleSettings = {
+                'setting-isolation-mode': 'settings/coreMatrix/isolationMode',
+                'setting-debug-mode': 'settings/systemEnv/debugMode',
+                'setting-auto-deploy': 'settings/systemEnv/autoDeploy'
+            };
+
+            // Global toggle sync handler
+            window.syncToggle = function(id) {
+                if(!window._uid) return;
+                const el = document.getElementById(id);
+                if(!el) return;
+                const isOn = el.classList.contains('on');
+                const path = toggleSettings[id];
+                if(path) {
+                    db.ref(path).set(isOn);
+                }
+            };
+
+            // Attach input listeners
+            Object.keys(stringSettings).forEach(id => {
+                const el = document.getElementById(id);
+                if(el) {
+                    el.addEventListener('input', (e) => {
+                        if(!window._uid) return;
+                        db.ref(stringSettings[id]).set(e.target.value);
+                    });
+                }
+            });
+
+            // Theme radio listeners
+            document.querySelectorAll('input[name="theme"]').forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    if(!window._uid) return;
+                    if(e.target.checked) {
+                        db.ref('settings/systemEnv/theme').set(e.target.value);
+                    }
+                });
+            });
+
+            // Listen for DB changes to update UI
+            let isFirstLoad = true;
+            firebase.auth().onAuthStateChanged(user => {
+                if(user) {
+                    // Wait briefly for _uid to be set if not immediately available
+                    setTimeout(() => {
+                        if(window._uid) {
+                            db.ref('settings').on('value', snap => {
+                                const data = snap.val();
+                                if(!data) return;
+
+                                // Only update inputs if they aren't currently focused, to prevent jumping cursors
+                                const activeEl = document.activeElement;
+
+                                if(data.coreMatrix) {
+                                    if(data.coreMatrix.personalityName !== undefined && activeEl.id !== 'setting-personality-name') 
+                                        document.getElementById('setting-personality-name').value = data.coreMatrix.personalityName;
+                                    if(data.coreMatrix.commandSignature !== undefined && activeEl.id !== 'setting-command-signature') 
+                                        document.getElementById('setting-command-signature').value = data.coreMatrix.commandSignature;
+                                    if(data.coreMatrix.retentionWindow !== undefined && activeEl.id !== 'setting-retention-window') 
+                                        document.getElementById('setting-retention-window').value = data.coreMatrix.retentionWindow;
+                                    if(data.coreMatrix.coreDirective !== undefined && activeEl.id !== 'setting-core-directive') 
+                                        document.getElementById('setting-core-directive').value = data.coreMatrix.coreDirective;
+                                    
+                                    if(data.coreMatrix.isolationMode !== undefined) {
+                                        const el = document.getElementById('setting-isolation-mode');
+                                        if(data.coreMatrix.isolationMode) el.classList.add('on');
+                                        else el.classList.remove('on');
+                                    }
+                                }
+
+                                if(data.systemEnv) {
+                                    if(data.systemEnv.debugMode !== undefined) {
+                                        const el = document.getElementById('setting-debug-mode');
+                                        if(data.systemEnv.debugMode) el.classList.add('on');
+                                        else el.classList.remove('on');
+                                    }
+                                    if(data.systemEnv.autoDeploy !== undefined) {
+                                        const el = document.getElementById('setting-auto-deploy');
+                                        if(data.systemEnv.autoDeploy) el.classList.add('on');
+                                        else el.classList.remove('on');
+                                    }
+                                    if(data.systemEnv.theme !== undefined) {
+                                        if(data.systemEnv.theme === 'dark') document.getElementById('setting-theme-dark').checked = true;
+                                        if(data.systemEnv.theme === 'terminal') document.getElementById('setting-theme-terminal').checked = true;
+                                    }
+                                }
+                            });
+                        }
+                    }, 500);
+                }
+            });
+
+            // 2. LocalStorage Sync for API Keys
+            const apiKeys = {
+                'api-key-gemini': 'george-api-gemini',
+                'api-key-elevenlabs': 'george-api-elevenlabs',
+                'api-key-groq': 'george-api-groq'
+            };
+
+            Object.keys(apiKeys).forEach(id => {
+                const el = document.getElementById(id);
+                const storageKey = apiKeys[id];
+                if(el) {
+                    // Load existing
+                    const saved = localStorage.getItem(storageKey);
+                    if(saved) el.value = saved;
+                    
+                    // Save on change
+                    el.addEventListener('input', (e) => {
+                        localStorage.setItem(storageKey, e.target.value);
+                    });
+                }
+            });
         });
     </script>
 </body>
