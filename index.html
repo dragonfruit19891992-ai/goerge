@@ -436,21 +436,30 @@
                             <div class="p-5 rounded-3xl border border-white/5 bg-white/5">
                                 <h4 class="text-white font-bold mb-2">Organizer</h4>
                                 <p class="text-xs text-gray-400 mb-4">Read and organize only. No delete.</p>
-                                <button class="text-xs bg-indigo-600 px-3 py-2 rounded text-white mb-3" onclick="chooseLocalFolder('organizer')">Select folder</button>
+                                <div class="flex gap-2 mb-3">
+                                    <button class="text-xs bg-indigo-600 px-3 py-2 rounded text-white flex-1" onclick="chooseLocalFolder('organizer')">Select folder</button>
+                                    <button class="text-xs bg-orange-600 px-3 py-2 rounded text-white flex-1 font-bold" onclick="indexLocalFolder('organizer', event)">Burn to Memory</button>
+                                </div>
                                 <div id="local-organizer-status" class="text-[11px] text-gray-400 space-y-1">No folder selected.</div>
                                 <button class="text-xs bg-white/5 px-3 py-2 rounded text-gray-200 mt-4" onclick="showLocalFolderContents('organizer')">Show contents</button>
                             </div>
                             <div class="p-5 rounded-3xl border border-white/5 bg-white/5">
                                 <h4 class="text-white font-bold mb-2">Editor</h4>
                                 <p class="text-xs text-gray-400 mb-4">Read, edit, and write.</p>
-                                <button class="text-xs bg-indigo-600 px-3 py-2 rounded text-white mb-3" onclick="chooseLocalFolder('editor')">Select folder</button>
+                                <div class="flex gap-2 mb-3">
+                                    <button class="text-xs bg-indigo-600 px-3 py-2 rounded text-white flex-1" onclick="chooseLocalFolder('editor')">Select folder</button>
+                                    <button class="text-xs bg-orange-600 px-3 py-2 rounded text-white flex-1 font-bold" onclick="indexLocalFolder('editor', event)">Burn to Memory</button>
+                                </div>
                                 <div id="local-editor-status" class="text-[11px] text-gray-400 space-y-1">No folder selected.</div>
                                 <button class="text-xs bg-white/5 px-3 py-2 rounded text-gray-200 mt-4" onclick="showLocalFolderContents('editor')">Show contents</button>
                             </div>
                             <div class="p-5 rounded-3xl border border-white/5 bg-white/5">
                                 <h4 class="text-white font-bold mb-2">Vault</h4>
                                 <p class="text-xs text-gray-400 mb-4">Write, edit, delete, and full trusted control.</p>
-                                <button class="text-xs bg-indigo-600 px-3 py-2 rounded text-white mb-3" onclick="chooseLocalFolder('vault')">Select folder</button>
+                                <div class="flex gap-2 mb-3">
+                                    <button class="text-xs bg-indigo-600 px-3 py-2 rounded text-white flex-1" onclick="chooseLocalFolder('vault')">Select folder</button>
+                                    <button class="text-xs bg-orange-600 px-3 py-2 rounded text-white flex-1 font-bold" onclick="indexLocalFolder('vault', event)">Burn to Memory</button>
+                                </div>
                                 <div id="local-vault-status" class="text-[11px] text-gray-400 space-y-1">No folder selected.</div>
                                 <button class="text-xs bg-white/5 px-3 py-2 rounded text-gray-200 mt-4" onclick="showLocalFolderContents('vault')">Show contents</button>
                             </div>
@@ -1654,6 +1663,40 @@ export async function liveSync(files) {
         }
         setInterval(pollDaemonStatus, 5000); // Ping every 5 seconds
         pollDaemonStatus();
+
+        // Trigger Local Context Indexer
+        async function indexLocalFolder(mode, event) {
+            if (!window.localFolderHandles || !window.localFolderHandles[mode] || window.localFolderHandles[mode].length === 0) {
+                alert(`No folders selected for ${mode} yet!`);
+                return;
+            }
+            
+            const folderName = window.localFolderHandles[mode][0].name;
+            const btn = event.currentTarget;
+            const originalText = btn.textContent;
+            btn.textContent = "Burning...";
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('http://localhost:8000/api/index-folder', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ relativePath: folderName, mode: mode })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    alert(`Success! George memorized ${data.indexedFiles} files from '${folderName}' under strict ${mode} IAM rules.`);
+                } else {
+                    const err = await response.json();
+                    alert('Failed to index: ' + err.error);
+                }
+            } catch (error) {
+                alert('Daemon offline or error: ' + error.message);
+            }
+            btn.textContent = originalText;
+            btn.disabled = false;
+        }
 
     </script>
 </body>
