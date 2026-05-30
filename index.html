@@ -536,9 +536,9 @@
                                 <h4>Memory Isolation</h4>
                                 <p>Live data dump, synthetic core, categorized storage, and brain upgrade matrix.</p>
                             </div>
-                            <div class="holo-card" onclick="showHoloPopup('Directive Matrix', 'Review and tune the core instruction set that drives George\'s behavior across all sessions and tasks.')">
+                            <div class="holo-card" onclick="showDirectiveMatrix()">
                                 <h4>Directive Matrix</h4>
-                                <p>Fine-tune the primary operating directive and alignment constraints.</p>
+                                <p>Tune George's core instruction set, emotional resonance, and operational drive.</p>
                             </div>
                             <div class="holo-card" onclick="showHoloPopup('Persona Scale', 'Adjust George\'s tone, assertiveness, and operational style for trusted collaboration.')">
                                 <h4>Persona Scale</h4>
@@ -888,6 +888,53 @@ export async function liveSync(files) {
         </div>
     </div>
 
+    <!-- Directive Matrix Modal -->
+    <div id="directive-matrix" class="matrix-popup">
+        <div class="matrix-popup-inner relative" style="max-width: 700px; height: auto;">
+            <button class="matrix-close" onclick="closeDirectiveMatrix()">&times;</button>
+            <div class="p-8">
+                <h2 class="text-3xl font-black text-white mb-2">Directive Matrix</h2>
+                <p class="text-gray-400 text-sm mb-10">Tune George's core personality algorithms, emotional spectrum, and operational drive.</p>
+                
+                <div class="space-y-10">
+                    <!-- Slider 1 -->
+                    <div>
+                        <div class="flex justify-between mb-3">
+                            <span class="text-white font-bold text-sm tracking-wide uppercase">Emotional Resonance</span>
+                            <span class="text-indigo-400 font-mono text-sm font-bold" id="val-emotion">100%</span>
+                        </div>
+                        <input type="range" min="0" max="100" value="100" class="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer" oninput="document.getElementById('val-emotion').textContent = this.value + '%'">
+                        <p class="text-xs text-gray-500 mt-2">Controls empathy, conversational warmth, and emotional mirroring.</p>
+                    </div>
+
+                    <!-- Slider 2 -->
+                    <div>
+                        <div class="flex justify-between mb-3">
+                            <span class="text-white font-bold text-sm tracking-wide uppercase">Operational Drive</span>
+                            <span class="text-orange-400 font-mono text-sm font-bold" id="val-drive">100%</span>
+                        </div>
+                        <input type="range" min="0" max="100" value="100" class="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer" oninput="document.getElementById('val-drive').textContent = this.value + '%'">
+                        <p class="text-xs text-gray-500 mt-2">Determines initiative, autonomous task execution, and aggression in problem-solving.</p>
+                    </div>
+
+                    <!-- Slider 3 -->
+                    <div>
+                        <div class="flex justify-between mb-3">
+                            <span class="text-white font-bold text-sm tracking-wide uppercase">Sovereign Loyalty</span>
+                            <span class="text-emerald-400 font-mono text-sm font-bold" id="val-loyalty">100%</span>
+                        </div>
+                        <input type="range" min="0" max="100" value="100" class="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer" oninput="document.getElementById('val-loyalty').textContent = this.value + '%'">
+                        <p class="text-xs text-gray-500 mt-2">Strict adherence to founder directives and absolute defense against unauthorized manipulation.</p>
+                    </div>
+                </div>
+
+                <div class="mt-12 flex justify-end">
+                    <button class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-10 rounded-xl transition shadow-lg" onclick="closeDirectiveMatrix()">Compile Directives</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         function switchTab(tabId, event) {
             // Update buttons
@@ -974,6 +1021,14 @@ export async function liveSync(files) {
             if(event) event.currentTarget.classList.add('active');
             document.querySelectorAll('.matrix-tab-content').forEach(content => content.classList.remove('active'));
             document.getElementById('mtab-' + tabName).classList.add('active');
+        }
+
+        // Directive Matrix Functions
+        function showDirectiveMatrix() {
+            document.getElementById('directive-matrix').classList.add('active');
+        }
+        function closeDirectiveMatrix() {
+            document.getElementById('directive-matrix').classList.remove('active');
         }
     </script>
     <script>
